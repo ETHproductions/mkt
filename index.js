@@ -1,3 +1,46 @@
+Vue.component('dkg-input', {
+    props: {
+        type: String, // "driver", "kart", or "glider"
+        side: Number // 1 for left, 2 for right
+    },
+    data: function () {
+        let minpts = this.type == "driver" ? 400 : 200;
+        return {
+            klass: 'input-' + this.side,
+            id: 'select-' + this.side + '-' + this.type,
+            minpts: minpts
+        }
+    },
+    template: `
+      <div class="dkg-input">
+        <select :class="klass + ' select-' + type" :id="id"></select>
+        <br>
+        lv. <input :class="klass" :id="id + '-level'" type=number value=1 min=1 max=6>
+        | <input :class="klass" :id="id + '-level'" type=number :value="minpts" :min="minpts" :max="minpts*2"> pts
+      </div>`
+});
+
+Vue.component('select-dkg', {
+    props: {
+        side: Number
+    },
+    data: function () {
+        let minpts = this.type == "driver" ? 400 : 200;
+        return {
+            id: 'select-' + this.side + '-dkg',
+            onclick: 'cloneSelect(-' + this.side + ')'
+        }
+    },
+    template: `
+      <div class="select-dkg" :id="id">
+        <h3>Setup {{ side }}</h3>
+        <dkg-input type="driver" :side="side"></dkg-input>
+        <dkg-input type="kart" :side="side"></dkg-input>
+        <dkg-input type="glider" :side="side"></dkg-input>
+        <button :onclick="onclick">Copy other side</button>
+      </div>`
+})
+
 Vue.component('tier-marker', {
     props: {
         tier: Number, // default tier on the course: 1 for bottom, 2 for middle, 3 for top
@@ -296,7 +339,7 @@ function setupMenu()
     {
         for (let item in window[j + "data"])
         {
-            $(`#select-1-${ j }`).append(`<option value="${ item }">${ item }</option>`);
+            $(`.select-${ j }`).append(`<option value="${ item }">${ item }</option>`);
         }
     }
     for (let item in coursedata)
@@ -304,7 +347,7 @@ function setupMenu()
         $("#select-track").append(`<option value="${ item }">${ item }</option>`);
     }
     
-    cloneSelect(-2);
+    onInput();
     
     $("select").on("input", onInput);
     $("input").on("input", onInput);

@@ -27,6 +27,9 @@ select {
 input {
   width: 50px;
 }
+.dkg-input {
+  margin-bottom: 16px;
+}
 .select-dkg {
   width: 200px;
   padding: 0 10px 10px 10px;
