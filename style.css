@@ -110,7 +110,7 @@ span[title] {
   text-decoration: underline;
   text-decoration-style: dotted;
 }
-#result-1-kart, #result-2-kart {
+.result-kart {
   margin-top: 10px;
   margin-bottom: 10px;
 }
