@@ -13,10 +13,10 @@ Vue.component('dkg-input', {
     },
     template: `
       <div class="dkg-input">
-        <select :class="klass + ' select-' + type" :id="id"></select>
+        <select :class="klass + ' select-' + type" :id="id + '-name'"></select>
         <br>
         lv. <input :class="klass" :id="id + '-level'" type=number value=1 min=1 max=6>
-        | <input :class="klass" :id="id + '-level'" type=number :value="minpts" :min="minpts" :max="minpts*2"> pts
+        | <input :class="klass" :id="id + '-points'" type=number :value="minpts" :min="minpts" :max="minpts*2"> pts
       </div>`
 });
 
@@ -46,17 +46,20 @@ Vue.component('tier-marker', {
         tier: Number, // default tier on the course: 1 for bottom, 2 for middle, 3 for top
         boost: String // boost received, if any: "cup", "spotlight", or "cup & spotlight"
     },
-    data: function () {
-        let tiers = [, "bottom", "middle", "top"];
-        let tierboost = this.boost ? this.boost.length > 10 ? 2 : 1 : 0;
-        let fulltier = Math.min(+this.tier + tierboost, 3);
-        let tiertext = fulltier == 3 ? 'top' : fulltier == 2 ? 'middle' : 'bottom';
-        let title = `This item is ${ tiers[this.tier] }-tier on this course`;
-        if (this.tier != fulltier)
-            title += `, but receives a ${ this.boost } boost to become ${ tiers[fulltier] }-tier`;
-        return {
-            title: title,
-            text: "+".repeat(fulltier)
+    computed: {
+        fulltier: function () {
+            let tierboost = this.boost ? this.boost.length > 10 ? 2 : 1 : 0;
+            return Math.min(+this.tier + tierboost, 3);
+        },
+        title: function () {
+            let tiers = [, "bottom", "middle", "top"]
+            let title = `This item is ${ tiers[this.tier] }-tier on this course`;
+            if (this.tier != this.fulltier)
+                title += `, but receives a ${ this.boost } boost to become ${ tiers[this.fulltier] }-tier`;
+            return title;
+        },
+        text: function () {
+            return "+".repeat(this.fulltier);
         }
     },
     template: '<span :title="title">{{ text }}</span>'
@@ -98,21 +101,30 @@ Vue.component('imagebox', {
     props: {
         type: String,
         name: String,
-        rarity: String,
+        rarity: Number,
         skill: String
     },
-    data: function () {
-        return {
-            mainimg: `img/${ this.type }s/${ this.name }.png`,
-            rarityimg: `img/items/${ this.rarity }.png`,
-            skillimg: `img/items/${ this.skill }.png`,
-            skilltitle: this.type == 'driver' ? this.skill : this.skill + ' Plus'
-        }
+    computed: {
+        mainimg: function () {
+            return `img/${ this.type }s/${ this.name.replace(/\?/g, "Q") }.png`;
+        },
+        raritytitle: function () {
+            return [, "Normal", "Super", "High-End"][this.rarity];
+        },
+        rarityimg: function () {
+            return `img/items/${ this.raritytitle }.png`;
+        },
+        skilltitle: function () {
+            return this.type == 'driver' ? this.skill : this.skill + ' Plus';
+        },
+        skillimg: function () {
+            return `img/items/${ this.skill }.png`;
+        },
     },
     template: `
     <div class="result-dkg-img">
       <img :src="mainimg" :title="name">
-      <img class="icon" :src="rarityimg" :title="rarity">
+      <img class="icon" :src="rarityimg" :title="raritytitle">
       <img class="icon" :src="skillimg" :title="skilltitle">
     </div>`
 });
@@ -145,10 +157,10 @@ var app = new Vue({
             {
                 type: "driver",
                 name: "Hammer Bro",
-                rarity: "Super",
+                rarity: 2,
                 skill: "Hammer",
                 tier: 2,
-                tierboost: "spotlight",
+                tierboost: "",
                 displayprops: {
                     "Level": "3",
                     "Items": "3",
@@ -160,7 +172,7 @@ var app = new Vue({
             {
                 type: "kart",
                 name: "Quickshaw",
-                rarity: "High-End",
+                rarity: 3,
                 skill: "Rocket Start",
                 tier: 2,
                 tierboost: "",
@@ -175,7 +187,7 @@ var app = new Vue({
             {
                 type: "glider",
                 name: "Super Glider",
-                rarity: "Normal",
+                rarity: 1,
                 skill: "Green Shell",
                 tier: 3,
                 tierboost: "",
@@ -193,7 +205,7 @@ var app = new Vue({
             {
                 type: "driver",
                 name: "Black Shy Guy",
-                rarity: "Super",
+                rarity: 2,
                 skill: "Bob-omb Cannon",
                 tier: 3,
                 tierboost: "",
@@ -208,7 +220,7 @@ var app = new Vue({
             {
                 type: "kart",
                 name: "Warship",
-                rarity: "Normal",
+                rarity: 1,
                 skill: "Mini-Turbo",
                 tier: 3,
                 tierboost: "",
@@ -223,7 +235,7 @@ var app = new Vue({
             {
                 type: "glider",
                 name: "Super Glider",
-                rarity: "Normal",
+                rarity: 1,
                 skill: "Green Shell",
                 tier: 3,
                 tierboost: "",
@@ -327,7 +339,6 @@ function loadDKGData()
 
 function cloneSelect(n)
 {
-    $(`#select${ n }-dkg`).html($($(`#select${ n^1 }-dkg`).html().split(n^1).join(n)));
     $(`.input${ n }`).each((_, el) => el.value = $("#" + el.id.split(n).join(n^1)).val())
     onInput();
 }
@@ -357,25 +368,30 @@ let dkg = [[], {}, {}];
 
 function onInput()
 {
-    for (let i of [1, 2])
+    for (let side of [1, 2])
     {
-        for (let j of ["driver", "kart", "glider"])
+        let setup = app['setup' + side];
+        for (let j of [0, 1, 2])
         {
-            for (let k of ["", "-level", "-points"])
+            let type = ["driver", "kart", "glider"][j];
+            for (let k of ["name", "level", "points"])
             {
-                k = j + k;
-                let val = $(`#select-${ i }-${ k }`).val();
-                if (dkg[i][k] !== val)
+                let input = type + '-' + k;
+                let val = $(`#select-${ side }-${ input }`).val();
+                if (dkg[side][input] !== val)
                 {
-                    dkg[i][k] = val;
-                    let data = window[j + "data"][dkg[i][j]];
-                    /*$(`#result-${ i }-${ j }`).html(`<img class="dkg" src="img/${ j }s/${ dkg[i][j] || "default" }.png">`
-                    + `<div class="infobox">${ data ? [, "Normal", "Super", "High-End"][data.rarity] : "?" } lv. ${ dkg[i][j + '-level'] }<br>`
-                    + `Base pts: ${ dkg[i][j + '-points'] }<br>`
-                    + `Skill: <img class="icon" src="img/items/${ data ? data.skill : "default" }.png"></div>`);*/
+                    dkg[side][input] = val;
+                    let data = window[type + "data"][dkg[side][input]];
+                    Vue.set(setup[j], k, dkg[side][input]);
+                    if (k === "name")
+                    {
+                        setup[j].rarity = data.rarity;
+                        setup[j].skill = data.skill;
+                    }
                 }
             }
         }
+    }
         let updatecourse = false;
         let val = $("#select-track").val();
         if (dkg[0][0] !== val)
@@ -396,14 +412,14 @@ function onInput()
                 }
             }
         }
-        
+
         val = $("#select-course").val();
         if (dkg[0][1] !== val)
         {
             updatecourse = true;
             dkg[0][1] = val;
         }
-        
+
         if (updatecourse)
         {
             let course = dkg[0][0];
@@ -413,7 +429,6 @@ function onInput()
             $("#result-track").html(`<img src="img/courses/${ course }.png">`);
             $("#select-course-actions").val()
         }
-    }
 }
 
 let startTime = new Date;
