@@ -1,0 +1,165 @@
+body {
+  color: white;
+  text-align: center;
+  background-color: #123;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+}
+#container {
+  max-width: 900px;
+  margin: auto;
+}
+#container-select {
+  overflow: auto;
+  margin-bottom: 10px;
+}
+#container-result {
+  overflow: auto;
+  margin-bottom: 10px;
+}
+.hidden {
+  display: none;
+}
+select {
+  width: 200px;
+  margin-bottom: 8px;
+}
+input {
+  width: 50px;
+}
+.select-dkg {
+  width: 200px;
+  padding: 0 10px 10px 10px;
+  margin-bottom: 10px;
+  display: block;
+}
+#select-1-dkg {
+  float: left;
+  background-color: #a00;
+  margin-right: 10px;
+}
+#select-2-dkg {
+  float: right;
+  background-color: #0a0;
+  margin-left: 10px;
+}
+#track {
+  display: inline-block;
+  width: 287px;
+  padding: 0 10px 10px 10px;
+  background-color: #aa0;
+}
+#select-course {
+    width: 60px;
+}
+
+.result {
+  width: 45%;
+  min-width: 200px;
+  max-width: 360px;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #666;
+}
+#result-1 {
+  float: left;
+}
+#result-2 {
+  float: right;
+}
+.result-dkg-img {
+  width: 200px;
+  vertical-align: middle;
+  margin: auto;
+}
+.result img {
+  width: 120px;
+  padding: 10px;
+  float: left;
+}
+img.icon {
+  width: 40px;
+  height: 40px;
+  padding: 0 5px 10px 5px;
+  margin: 25px 0 -25px 0;
+}
+table {
+  width: 100%;
+  padding: 10px;
+  background-color: #432;
+  border-radius: 7px;
+}
+tr {
+  height: 25px;
+}
+.infobox {
+  text-align: left;
+  margin-bottom: 20px;
+}
+#result-1 .infobox {
+  float: right;
+}
+#result-2 .infobox {
+  float: left;
+}
+th {
+  text-align: center;
+  font-size: 16px;
+}
+span[title] {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+#result-1-kart, #result-2-kart {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+@media screen and (min-width: 800px) {
+  .result-dkg {
+    display: flex;
+    align-items: center;
+    text-align: center;
+  }
+  .infobox {
+    display: inline-block;
+    margin-bottom: 0;
+    margin-left: 10px;
+  }
+  .result-dkg-img {
+    width: 170px;
+    display: inline-block;
+  }
+  .result-dkg-img img {
+    float: left;
+  }
+  img.icon {
+    margin: 0 -20px 0 20px;
+  }
+}
+.result .td-l {
+    width: 100%;
+}
+.result .td-r {
+    text-align: right;
+    font-weight: bold;
+}
+#result-track img {
+    height: 85px;
+}
+
+#comparison {
+  background-color: #a0a;
+  width: 90%;
+  max-width: 400px;
+  margin: auto;
+  padding: 10px;
+}
+#comparison table {
+  width: 100%;
+}
+#comparison .td-l {
+  width: 50%;
+}
+#comparison .td-r {
+  width: 25%;
+}

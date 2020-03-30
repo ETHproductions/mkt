@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<title>MKT comparison tool</title>
+<link href="style.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
+
+<body>
+<div id="container">
+
+<div id="container-select">
+<div class="select-dkg" id="select-1-dkg">
+  <h3>Setup-1</h3>
+  <select class="input-1" id="select-1-driver"></select>
+  <br>
+  lv. <input class="input-1" id="select-1-driver-level" type=number value=1 max=6> | <input class="input-1" id="select-1-driver-points" type=number value=400 max=800> pts
+  <br><br>
+  <select class="input-1" id="select-1-kart"></select>
+  <br>
+  lv. <input class="input-1" id="select-1-kart-level" type=number value=1 max=6> | <input class="input-1" id="select-1-kart-points" type=number value=200 max=400> pts
+  <br><br>
+  <select class="input-1" id="select-1-glider"></select>
+  <br>
+  lv. <input class="input-1" id="select-1-glider-level" type=number value=1 max=6> | <input class="input-1" id="select-1-glider-points" type=number value=200 max=400> pts
+  <br><br>
+  <button onclick="cloneSelect(-1)">Copy other side</button>
+</div>
+<div class="select-dkg" id="select-2-dkg"></div>
+
+<div id="track">
+  <h3>Course</h3>
+  <select id="select-track"></select>
+  <br>
+  Variant:
+  <select id="select-course">
+    <option value="N">N</option>
+    <option value="R">R</option>
+    <option value="T">T</option>
+    <option id="course-rt" value="R/T">R/T</option>
+  </select>
+  <div id="result-track"></div>
+</div>
+
+</div>
+
+<div id="container-result">
+
+<div class="result" id="result-1">
+  <div class="result-dkg" id="result-1-driver">
+    <div class="result-dkg-img">
+      <img id="result-1-driver-img" src="img/drivers/Black Shy Guy.png">
+      <img class="icon" src="img/items/Super.png">
+      <img class="icon" src="img/items/Bob-omb Cannon.png">
+    </div>
+    <table class="infobox">
+      <th colspan=2>Black Shy Guy <span title="This item is top-tier on this course">+++</span></th>
+      <tr>
+        <td class="td-l">Level</td>
+        <td class="td-r">3</td>
+      </tr>
+      <tr>
+        <td class="td-l">Items</td>
+        <td class="td-r">3</td>
+      </tr>
+      <tr>
+        <td class="td-l">Frenzy chance</td>
+        <td class="td-r">+3%</td>
+      </tr>
+      <tr>
+        <td class="td-l">Base pts</td>
+        <td class="td-r">657</td>
+      </tr>
+      <tr>
+        <td class="td-l">Bonus-points boost</td>
+        <td class="td-r">+6.57</td>
+      </tr>
+    </table>
+  </div>
+  <div class="result-dkg" id="result-1-kart">
+    <div class="result-dkg-img">
+      <img id="result-1-kart-img" src="img/karts/Quickshaw.png">
+      <img class="icon" src="img/items/High-End.png">
+      <img class="icon" src="img/items/Rocket Start.png">
+    </div>
+    <table class="infobox">
+      <th colspan=2>Quickshaw <span title="This item is middle-tier on this course">++</span></th>
+      <tr>
+        <td class="td-l">Level</td>
+        <td class="td-r">4</td>
+      </tr>
+      <tr>
+        <td class="td-l">Multiplier</td>
+        <td class="td-r">×1.8</td>
+      </tr>
+      <tr>
+        <td class="td-l">Rocket Start bonus</td>
+        <td class="td-r">+80</td>
+      </tr>
+      <tr>
+        <td class="td-l">Base pts</td>
+        <td class="td-r">400</td>
+      </tr>
+      <tr>
+        <td class="td-l">Bonus-points boost</td>
+        <td class="td-r"><span title="Items must be top-tier to receive a bonus-points boost">none</span></td>
+      </tr>
+    </table>
+  </div>
+  <div class="result-dkg" id="result-1-glider">
+    <div class="result-dkg-img">
+      <img id="result-1-glider-img" src="img/gliders/Super Glider.png">
+      <img class="icon" src="img/items/Normal.png">
+      <img class="icon" src="img/items/Green Shell.png">
+    </div>
+    <table class="infobox">
+      <th colspan=2>Super Glider <span title="This item is top-tier on this course">+++</span></th>
+      <tr>
+        <td class="td-l">Level</td>
+        <td class="td-r">4</td>
+      </tr>
+      <tr>
+        <td class="td-l">Combo time</td>
+        <td class="td-r">×2.2</td>
+      </tr>
+      <tr>
+        <td class="td-l">Combo bonus</td>
+        <td class="td-r">×3</td>
+      </tr>
+      <tr>
+        <td class="td-l">Green Shell bonus</td>
+        <td class="td-r">+10</td>
+      </tr>
+      <tr>
+        <td class="td-l">Base points</td>
+        <td class="td-r">300</td>
+      </tr>
+      <tr>
+        <td class="td-l">Bonus-points boost</td>
+        <td class="td-r">+4.5</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="result" id="result-2">
+  <div class="result-dkg" id="result-2-driver">
+    <div class="result-dkg-img">
+      <img id="result-2-driver-img" src="img/drivers/Black Shy Guy.png">
+      <img class="icon" src="img/items/Super.png">
+      <img class="icon" src="img/items/Bob-omb Cannon.png">
+    </div>
+    <table class="infobox">
+      <th colspan=2>Black Shy Guy <span title="This item is top-tier on this course">+++</span></th>
+      <tr>
+        <td class="td-l">Level</td>
+        <td class="td-r">3</td>
+      </tr>
+      <tr>
+        <td class="td-l">Items</td>
+        <td class="td-r">3</td>
+      </tr>
+      <tr>
+        <td class="td-l">Frenzy chance</td>
+        <td class="td-r">+3%</td>
+      </tr>
+      <tr>
+        <td class="td-l">Base pts</td>
+        <td class="td-r">657</td>
+      </tr>
+      <tr>
+        <td class="td-l">Bonus-points boost</td>
+        <td class="td-r">+6.57</td>
+      </tr>
+    </table>
+  </div>
+  <div class="result-dkg" id="result-2-kart">
+    <div class="result-dkg-img">
+      <img id="result-2-kart-img" src="img/karts/Warship.png">
+      <img class="icon" src="img/items/Normal.png">
+      <img class="icon" src="img/items/Mini-Turbo.png">
+    </div>
+    <table class="infobox">
+      <th colspan=2>Warship <span title="This item is top-tier on this course">+++</span></th>
+      <tr>
+        <td class="td-l">Level</td>
+        <td class="td-r">1</td>
+      </tr>
+      <tr>
+        <td class="td-l">Multiplier</td>
+        <td class="td-r">×2.0</td>
+      </tr>
+      <tr>
+        <td class="td-l">Mini-Turbo bonus</td>
+        <td class="td-r">+2</td>
+      </tr>
+      <tr>
+        <td class="td-l">Base pts</td>
+        <td class="td-r">300</td>
+      </tr>
+      <tr>
+        <td class="td-l">Bonus-points boost</td>
+        <td class="td-r">+0</td>
+      </tr>
+    </table>
+  </div>
+  <div class="result-dkg" id="result-2-glider">
+    <div class="result-dkg-img">
+      <img id="result-2-glider-img" src="img/gliders/Super Glider.png">
+      <img class="icon" src="img/items/Normal.png">
+      <img class="icon" src="img/items/Green Shell.png">
+    </div>
+    <table class="infobox">
+      <th colspan=2>Super Glider <span title="This item is top-tier on this course">+++</span></th>
+      <tr>
+        <td class="td-l">Level</td>
+        <td class="td-r">4</td>
+      </tr>
+      <tr>
+        <td class="td-l">Combo time</td>
+        <td class="td-r">×2.2</td>
+      </tr>
+      <tr>
+        <td class="td-l">Combo bonus</td>
+        <td class="td-r">×3</td>
+      </tr>
+      <tr>
+        <td class="td-l">Green Shell bonus</td>
+        <td class="td-r">+10</td>
+      </tr>
+      <tr>
+        <td class="td-l">Base points</td>
+        <td class="td-r">300</td>
+      </tr>
+      <tr>
+        <td class="td-l">Bonus-points boost</td>
+        <td class="td-r">+4.5</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<div id="comparison">
+  <h3>Summary</h3>
+  <table id="comparison-summary">
+    <tr>
+      <td></td>
+      <th>Setup-1</th>
+      <th>Setup-2</th>
+    </tr>
+    <tr>
+      <td class="td-l"><span title="Points awarded for driver/kart/glider at the beginning of the race">Base points</span></td>
+      <td class="td-r"><b>1357</b></td>
+      <td class="td-r">1257</td>
+    </tr>
+    <tr>
+      <td class="td-l"><span title="Multiplier applied to each action's base points">Kart action multiplier</span></td>
+      <td class="td-r">×1.8</td>
+      <td class="td-r"><b>×2.0</b></td>
+    </tr>
+    <tr>
+      <td class="td-l"><span title="Bonus points awarded on every action">Bonus-points boost</span></td>
+      <td class="td-r"><b>+11.07</b></td>
+      <td class="td-r"><b>+11.07</b></td>
+    </tr>
+  </table>
+  <h3>Points per action</h3>
+  <table id="comparison-points">
+    <tr>
+      <td></td>
+      <th>Setup-1</th>
+      <th>Setup-2</th>
+    </tr>
+    <tr>
+      <td class="td-l">Coin</td>
+      <td class="td-r">21</td>
+      <td class="td-r"><b>22</b></td>
+    </tr>
+    <tr>
+      <td class="td-l">Dash Panel</td>
+      <td class="td-r">30</td>
+      <td class="td-r"><b>32</b></td>
+    </tr>
+    <tr>
+      <td class="td-l">Jump Boost</td>
+      <td class="td-r">30</td>
+      <td class="td-r"><b>32</b></td>
+    </tr>
+    <tr>
+      <td class="td-l">Mini-Turbo</td>
+      <td class="td-r">21</td>
+      <td class="td-r"><b>24</b></td>
+    </tr>
+    <tr>
+      <td class="td-l">Super Mini-Turbo</td>
+      <td class="td-r">39</td>
+      <td class="td-r"><b>44</b></td>
+    </tr>
+    <tr>
+      <td class="td-l">Ultra Mini-Turbo</td>
+      <td class="td-r">66</td>
+      <td class="td-r"><b>74</b></td>
+    </tr>
+    <tr>
+      <td class="td-l">Rocket Start</td>
+      <td class="td-r"><b>146</b></td>
+      <td class="td-r">72</td>
+    </tr>
+    <tr>
+      <td class="td-l">Slipstream</td>
+      <td class="td-r">66</td>
+      <td class="td-r"><b>72</b></td>
+    </tr>
+    <tr class="hidden">
+      <td class="td-l">Mushroom</td>
+      <td class="td-r">30</td>
+      <td class="td-r"><b>32</b></td>
+    </tr>
+    <tr>
+      <td class="td-l">Item hit</td>
+      <td class="td-r">57</td>
+      <td class="td-r"><b>62</b></td>
+    </tr>
+    <tr>
+      <td class="td-l">Green Shell hit</td>
+      <td class="td-r">67</td>
+      <td class="td-r"><b>72</b></td>
+    </tr>
+    <tr>
+      <td class="td-l"><span title="Action awarded at the beginning of a new lap/section">1st place!</span></td>
+      <td class="td-r">372</td>
+      <td class="td-r"><b>412</b></td>
+    </tr>
+    <tr>
+      <td class="td-l"><span title="Points awarded at the end of the race for each action performed">1st place bonus-points boost</span></td>
+      <td class="td-r"><b>+11.07</b></td>
+      <td class="td-r"><b>+11.07</b></td>
+    </tr>
+  </table>
+</div>
+
+</div> <!-- end container -->
+
+<script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous"></script>
+<script type="text/javascript" src="index.js"></script>
+</body>
+</html>
