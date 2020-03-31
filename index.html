@@ -20,7 +20,7 @@
     <option value="N">N</option>
     <option value="R">R</option>
     <option value="T">T</option>
-    <option id="course-rt" value="R/T">R/T</option>
+    <option id="course-rt" value="Z">R/T</option>
   </select>
   <div id="result-track"></div>
 </div>
@@ -28,8 +28,8 @@
 </div>
 
 <div id="container-result">
-  <result-box :objects="setup1" id="result-1"></result-box>
-  <result-box :objects="setup2" id="result-2"></result-box>
+  <result-box :objects="setups[1]" id="result-1"></result-box>
+  <result-box :objects="setups[2]" id="result-2"></result-box>
 </div>
 
 <div id="comparison">
@@ -60,8 +60,8 @@
   <table id="comparison-points">
     <tr>
       <td></td>
-      <th>Setup-1</th>
-      <th>Setup-2</th>
+      <th>Setup 1</th>
+      <th>Setup 2</th>
     </tr>
     <tr>
       <td class="td-l">Coin</td>

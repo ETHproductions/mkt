@@ -75,12 +75,14 @@ Vue.component('dkg-header', {
 Vue.component('dkg-prop', {
     props: {
         name: String,
-        value: String
+        nametitle: String,
+        value: String,
+        valuetitle: String
     },
     template: `
       <tr>
-        <td class="td-l">{{ name }}</td>
-        <td class="td-r">{{ value }}</td>
+        <td class="td-l"><span :title="nametitle">{{ name }}</span></td>
+        <td class="td-r"><span :title="valuetitle">{{ value }}</span></td>
       </tr>`
 });
 
@@ -92,7 +94,7 @@ Vue.component('infobox', {
       <table class="infobox">
         <tbody>
           <tr is="dkg-header" :object="object"></tr>
-          <tr is="dkg-prop" v-for="(value, name) in object.displayprops" :key="name" :name="name" :value="value"></tr>
+          <tr is="dkg-prop" v-for="prop in object.displayprops" :key="prop.name" v-bind="prop"></tr>
         </tbody>
       </table>`
 })
@@ -146,108 +148,103 @@ Vue.component('result-box', {
     },
     template:`
       <div class="result">
-        <result-dkg v-for="object in objects" :object="object"></result-dkg>
+        <result-dkg v-for="object in objects" :key="object.name" :object="object"></result-dkg>
       </div>`
 });
 
 var app = new Vue({
     el: '#container',
     data: {
-        setup1: [
-            {
-                type: "driver",
-                name: "Hammer Bro",
-                rarity: 2,
-                skill: "Hammer",
-                tier: 2,
-                tierboost: "",
-                displayprops: {
-                    "Level": "3",
-                    "Items": "3",
-                    "Frenzy chance": "+3%",
-                    "Base points": "657",
-                    "Bonus-points boost": "+6.57"
+        setups: [
+            [
+                {
+                    course: "",
+                    variant: "",
+                    fullname: ""
                 }
-            },
-            {
-                type: "kart",
-                name: "Quickshaw",
-                rarity: 3,
-                skill: "Rocket Start",
-                tier: 2,
-                tierboost: "",
-                displayprops: {
-                    "Level": "4",
-                    "Multiplier": "×1.8",
-                    "Rocket Start bonus": "+80",
-                    "Base points": "400",
-                    "Bonus-points boost": "none"
+            ],
+            [
+                {
+                    type: "driver",
+                    name: "Baby Mario",
+                    rarity: 1,
+                    skill: "Boomerang Flower",
+                    level: 0,
+                    points: 0,
+                    tier: 0,
+                    tierboost: "",
+                    fulltier: 0,
+                    bpb: 0,
+                    displayprops: []
+                },
+                {
+                    type: "kart",
+                    name: "Pipe Frame",
+                    rarity: 1,
+                    skill: "Slipstream",
+                    level: 0,
+                    points: 0,
+                    tier: 0,
+                    tierboost: "",
+                    fulltier: 0,
+                    bpb: 0,
+                    displayprops: []
+                },
+                {
+                    type: "glider",
+                    name: "Super Glider",
+                    rarity: 1,
+                    skill: "Green Shell",
+                    level: 0,
+                    points: 0,
+                    tier: 0,
+                    tierboost: "",
+                    fulltier: 0,
+                    bpb: 0,
+                    displayprops: []
                 }
-            },
-            {
-                type: "glider",
-                name: "Super Glider",
-                rarity: 1,
-                skill: "Green Shell",
-                tier: 3,
-                tierboost: "",
-                displayprops: {
-                    "Level": "4",
-                    "Combo time": "×2.2",
-                    "Combo bonus": "×3",
-                    "Green Shell bonus": "+10",
-                    "Base points": "300",
-                    "Bonus-points boost": "+4.5"
+            ],
+            [
+                {
+                    type: "driver",
+                    name: "Baby Mario",
+                    rarity: 1,
+                    skill: "Boomerang Flower",
+                    level: 0,
+                    points: 0,
+                    tier: 0,
+                    tierboost: "",
+                    fulltier: 0,
+                    bpb: 0,
+                    displayprops: []
+                },
+                {
+                    type: "kart",
+                    name: "Pipe Frame",
+                    rarity: 1,
+                    skill: "Slipstream",
+                    level: 0,
+                    points: 0,
+                    tier: 0,
+                    tierboost: "",
+                    fulltier: 0,
+                    bpb: 0,
+                    displayprops: []
+                },
+                {
+                    type: "glider",
+                    name: "Super Glider",
+                    rarity: 1,
+                    skill: "Green Shell",
+                    level: 0,
+                    points: 0,
+                    tier: 0,
+                    tierboost: "",
+                    fulltier: 0,
+                    bpb: 0,
+                    displayprops: []
                 }
-            }
-        ],
-        setup2: [
-            {
-                type: "driver",
-                name: "Black Shy Guy",
-                rarity: 2,
-                skill: "Bob-omb Cannon",
-                tier: 3,
-                tierboost: "",
-                displayprops: {
-                    "Level": "3",
-                    "Items": "3",
-                    "Frenzy chance": "+3%",
-                    "Base points": "657",
-                    "Bonus-points boost": "+6.57"
-                }
-            },
-            {
-                type: "kart",
-                name: "Warship",
-                rarity: 1,
-                skill: "Mini-Turbo",
-                tier: 3,
-                tierboost: "",
-                displayprops: {
-                    "Level": "1",
-                    "Multiplier": "×2.0",
-                    "Mini-Turbo bonus": "+2",
-                    "Base points": "300",
-                    "Bonus-points boost": "+0"
-                }
-            },
-            {
-                type: "glider",
-                name: "Super Glider",
-                rarity: 1,
-                skill: "Green Shell",
-                tier: 3,
-                tierboost: "",
-                displayprops: {
-                    "Level": "4",
-                    "Combo time": "×2.2",
-                    "Combo bonus": "×3",
-                    "Green Shell bonus": "+10",
-                    "Base points": "300",
-                    "Bonus-points boost": "+4.5"
-                }
-            }
+            ]
         ]
     }
 });
@@ -300,11 +297,37 @@ function loadTracks()
             let variant = track.slice(-1);
             track = track.slice(0, -1);
             track = trackmap[track];
-            if (variant != "N" && /\D$/.test(track))
+            if (/\D$/.test(track))
                 track += " ";
-            track += (variant == "X" ? "R/T" : variant == "N" ? "" : variant);
+            track += variant;
             return track;
         };
+        loadActionData();
+    });
+}
+function loadActionData()
+{
+    fetchLocal('data/actions.csv').then(response => response.text()).then(text => {
+        let rawdata = text.split("\r\n").map(l => l.split(","));
+        let actiondata = {};
+        
+        for (let i = 0; i < rawdata.length; i++)
+        {
+            let rawaction = rawdata[i];
+            let actionname = rawaction.shift();
+            let actionobj = actiondata[actionname] = {};
+            
+            let points = +rawaction.shift();
+            let skill = rawaction.shift();
+            if (skill === '$')
+                skill = actionname;
+            else if (skill === '')
+                skill = 'N/A';
+            actionobj.bonusskill = skill;
+            actionobj.points = [points, ...rawaction.splice(0, 3).map(Number)];
+        }
+        
+        console.log("actions:", window.actiondata = actiondata);
         loadDKGData();
     });
 }
@@ -364,71 +387,129 @@ function setupMenu()
     $("input").on("input", onInput);
 }
 
-let dkg = [[], {}, {}];
-
 function onInput()
 {
+    let updatecourse = false, course = app.setups[0].fullname;
+    let val = $("#select-track").val()
+    if (app.setups[0].course !== val)
+    {
+        updatecourse = true;
+        app.setups[0].course = val;
+        if (coursedata[val] && "Z" in coursedata[val])
+        {
+            $("#course-rt").prop("disabled", false);
+        }
+        else
+        {
+            $("#course-rt").prop("disabled", "disabled");
+            if ($("#select-course").val() == null)
+            {
+                $("#select-course").val("N");
+                app.setups[0].variant = "N";
+            }
+        }
+    }
+
+    val = $("#select-course").val();
+    if (app.setups[0].variant !== val)
+    {
+        updatecourse = true;
+        app.setups[0].variant = val;
+    }
+    
+    if (updatecourse)
+    {
+        course = app.setups[0].course;
+        if (/\D$/.test(course))
+            course += " ";
+        course += app.setups[0].variant;
+        app.setups[0].fullname = course;
+        $("#result-track").html(`<img src="img/courses/${ course }.png">`);
+    }
+    
     for (let side of [1, 2])
     {
-        let setup = app['setup' + side];
+        let setup = app.setups[side];
         for (let j of [0, 1, 2])
         {
             let type = ["driver", "kart", "glider"][j];
+            let item = setup[j];
+            let changed = false;
             for (let k of ["name", "level", "points"])
             {
                 let input = type + '-' + k;
                 let val = $(`#select-${ side }-${ input }`).val();
-                if (dkg[side][input] !== val)
+                if (app.setups[side][input] !== val)
                 {
-                    dkg[side][input] = val;
-                    let data = window[type + "data"][dkg[side][input]];
-                    Vue.set(setup[j], k, dkg[side][input]);
+                    changed = true;
+                    app.setups[side][input] = val;
+                    let data = window[type + "data"][app.setups[side][input]];
+                    Vue.set(item, k, app.setups[side][input]);
                     if (k === "name")
                     {
-                        setup[j].rarity = data.rarity;
-                        setup[j].skill = data.skill;
+                        item.rarity = data.rarity;
+                        item.skill = data.skill;
                     }
                 }
             }
+            let data = window[type + "data"][app.setups[side][type + "-name"]];
+            if (changed || updatecourse) {
+                item.tier = item.fulltier = data.tracks_tier2.includes(course) ? 3: data.tracks_tier1.includes(course) ? 2 : 1;
+                item.bpb = Math.round(item.points / 200 * (item.level - 1) * 1000) / 1000;
+                let dp = item.displayprops = [];
+                dp.push({
+                    name: "Base points",
+                    value: String(item.points)
+                });
+                dp.push({
+                    name: "Level",
+                    value: String(item.level)
+                });
+                
+                if (item.type === 'kart') {
+                    dp.push({
+                        name: "Action multiplier",
+                        nametitle: "Multiplier applied to the base points of each action",
+                        value: "×" + Math.round((1 + ((item.level >> 1) + item.rarity - 1) / 20) * (item.fulltier + 1) / 2 * 1000) / 1000
+                    });
+                }
+                if (item.type === 'glider') {
+                    dp.push({
+                        name: "Combo time",
+                        value: "×" + Math.round((1 + ((item.level >> 1) + item.rarity - 1) / 20) * (item.fulltier + 1) / 2 * 1000) / 1000
+                    });
+                    dp.push({
+                        name: "Combo multiplier",
+                        value: "×" + item.fulltier
+                    });
+                }
+                if (item.type === 'driver') {
+                    dp.push({
+                        name: "Items",
+                        value: String(item.fulltier)
+                    });
+                    dp.push({
+                        name: "Frenzy increase",
+                        nametitle: "Increase above base frenzy chance",
+                        value: item.fulltier === 3 ? "+" + [,[0,2,4,6],[1,3,5,8],[2,4,7,10]][item.rarity][item.level >> 1] + "%" : "N/A"
+                    });
+                }
+                else {
+                    dp.push({
+                        name: item.skill + " bonus",
+                        value: "+" + actiondata[item.skill].points[item.rarity]
+                    });
+                }
+                
+                dp.push({
+                    name: "Bonus-points boost",
+                    nametitle: "Bonus points given for every action",
+                    value: item.fulltier === 3 ? "+" + item.bpb : "none",
+                    valuetitle: item.fulltier === 3 ? item.level === "1" ? "Item must be level 2 or above to receive bonus-points boost" : undefined : "Item must be top-tier to receive bonus-points boost"
+                });
+            }
         }
     }
-        let updatecourse = false;
-        let val = $("#select-track").val();
-        if (dkg[0][0] !== val)
-        {
-            updatecourse = true;
-            dkg[0][0] = val;
-            if (coursedata[val] && "R/T" in coursedata[val])
-            {
-                $("#course-rt").prop("disabled", false);
-            }
-            else
-            {
-                $("#course-rt").prop("disabled", "disabled");
-                if ($("#select-course").val() == null)
-                {
-                    $("#select-course").val("N");
-                    dkg[0][1] = "N";
-                }
-            }
-        }
-
-        val = $("#select-course").val();
-        if (dkg[0][1] !== val)
-        {
-            updatecourse = true;
-            dkg[0][1] = val;
-        }
-
-        if (updatecourse)
-        {
-            let course = dkg[0][0];
-            if (/\D$/.test(course) && dkg[0][1] != "N")
-                course += " ";
-            course += dkg[0][1] == "R/T" ? "RT" : dkg[0][1] == "N" ? "" : dkg[0][1];
-            $("#result-track").html(`<img src="img/courses/${ course }.png">`);
-            $("#select-course-actions").val()
-        }
 }
 
 let startTime = new Date;

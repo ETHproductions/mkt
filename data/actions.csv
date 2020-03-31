@@ -1,0 +1,21 @@
+Dash Panel,10,$,5,10,15
+Jump Boost,20,$,4,6,8
+Mini-Turbo,5,$,2,3,4
+Super Mini-Turbo,15,Mini-Turbo,2,3,4
+Ultra Mini-Turbo,30,Mini-Turbo,2,3,4
+Rocket Start,30,$,30,50,80
+Slipstream,30,$,10,20,40
+Banana,25,$,10,20,30
+Blooper,10,$,5,10,15
+Bob-omb,25,$,10,20,30
+Bullet Bill,25,$,10,20,30
+Coin,5,$,1,2,3
+Green Shell,25,$,10,20,30
+Lightning,5,$,3,5,8
+Mega Mushroom,25,$,10,20,30
+Mushroom,10,$,5,10,15
+Red Shell,25,$,10,20,30
+Spiny Shell,25,$,10,20,30
+Super Horn,25,$,10,20,30
+Destroyed a Spiny Shell,100,Super Horn,10,20,30
+Repelled a Blooper,100,Super Horn,10,20,30

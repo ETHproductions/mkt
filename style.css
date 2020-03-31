@@ -59,7 +59,7 @@ input {
 .result {
   width: 45%;
   min-width: 200px;
-  max-width: 360px;
+  max-width: 400px;
   padding: 10px;
   margin-bottom: 10px;
   background-color: #666;
@@ -107,7 +107,7 @@ tr {
 }
 th {
   text-align: center;
-  font-size: 16px;
+  font-size: 15px;
 }
 span[title] {
   text-decoration: underline;
@@ -151,7 +151,7 @@ span[title] {
 }
 
 #comparison {
-  background-color: #a0a;
+  background-color: #949;
   width: 90%;
   max-width: 400px;
   margin: auto;
