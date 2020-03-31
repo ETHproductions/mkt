@@ -166,3 +166,6 @@ span[title] {
 #comparison .td-r {
   width: 25%;
 }
+.bold {
+  font-weight: 800;
+}

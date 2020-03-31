@@ -5,17 +5,74 @@ Super Mini-Turbo,15,Mini-Turbo,2,3,4
 Ultra Mini-Turbo,30,Mini-Turbo,2,3,4
 Rocket Start,30,$,30,50,80
 Slipstream,30,$,10,20,40
-Banana,25,$,10,20,30
-Blooper,10,$,5,10,15
-Bob-omb,25,$,10,20,30
-Bullet Bill,25,$,10,20,30
+Banana accuracy,25,$,10,20,30
+Blooper accuracy,10,$,5,10,15
+Bob-omb accuracy,25,$,10,20,30
+Bullet Bill accuracy,25,$,10,20,30
 Coin,5,$,1,2,3
-Green Shell,25,$,10,20,30
-Lightning,5,$,3,5,8
-Mega Mushroom,25,$,10,20,30
+Green Shell accuracy,25,$,10,20,30
+Lightning accuracy,5,$,3,5,8
+Mega Mushroom strike!,25,$,10,20,30
 Mushroom,10,$,5,10,15
-Red Shell,25,$,10,20,30
-Spiny Shell,25,$,10,20,30
-Super Horn,25,$,10,20,30
+Red Shell accuracy,25,$,10,20,30
+Spiny Shell accuracy,25,$,10,20,30
+Super Horn accuracy,25,$,10,20,30
 Destroyed a Spiny Shell,100,Super Horn,10,20,30
 Repelled a Blooper,100,Super Horn,10,20,30
+Bubble,10,$
+Dash Ring,10,$
+Birdo's Egg accuracy,25,$
+Boomerang accuracy,25,Boomerang Flower
+Bowser's Shell accuracy,25,$
+Fire Flower accuracy,25,$
+Giant Banana accuracy,25,$
+Heart,25,$
+Heart accuracy,25,$
+Hammer accuracy,25,$
+Ice Flower accuracy,25,$
+Yoshi's Egg accuracy,25,$
+Super Star strike!,25,$
+Frenzy strike!,25
+Frenzy Finish,50
+Payback,50
+Smash,50
+1st place!,200
+2nd place!,160
+3rd place!,120
+4th place!,100
+5th place!,80
+6th place!,60
+7th place!,40
+8th place!,20
+Frenzy Action,1
+Traffic cone,1
+Item destroyed!,5
+Item deflected!,5
+Coin (action),5
+Barrel,10
+Barrel Bomb,10
+Chain Chomp,10
+Cheep Cheep,10
+Clampy,10
+Crate,10
+Flying Shy Guy,10
+Gate Spin!,10
+Glide Time,10
+Goat,10
+Goomba,10
+Jar,10
+Metal ball,10
+Mushroom (action),10
+Pipe,10
+Piranha Plant,10
+Rolling rock,10
+Sidestepper,10
+Snake jar,10
+Snowball,10
+Snow block,10
+Snowperson,10
+Star Ring,10
+Star Thwomp,10
+Thwomp,10
+Train,10
+Wooden cutout,10

@@ -52,7 +52,7 @@ Vue.component('tier-marker', {
             return Math.min(+this.tier + tierboost, 3);
         },
         title: function () {
-            let tiers = [, "bottom", "middle", "top"]
+            let tiers = [, "bottom", "middle", "top"];
             let title = `This item is ${ tiers[this.tier] }-tier on this course`;
             if (this.tier != this.fulltier)
                 title += `, but receives a ${ this.boost } boost to become ${ tiers[this.fulltier] }-tier`;
@@ -152,6 +152,47 @@ Vue.component('result-box', {
       </div>`
 });
 
+Vue.component('comparison-prop-name', {
+    props: {
+        name: String,
+        title: String
+    },
+    template: `<td class="td-l"><span :title="title">{{ name }}</span></td>`
+});
+Vue.component('comparison-prop-val', {
+    props: {
+        value: String,
+        title: String,
+        highlight: Boolean
+    },
+    template: `<td :class="highlight ? 'td-r bold' : 'td-r'"><span :title="title">{{ value }}</span></td>`
+});
+Vue.component('comparison-prop', {
+    props: {
+        name: String,
+        nametitle: String,
+        values: Array
+    },
+    template: `
+      <tr>
+        <td is=comparison-prop-name :name="name" :title="nametitle"></td>
+        <td is=comparison-prop-val v-for="(value, key) in values" v-key="key" v-bind="value"></td>
+      </tr>`
+});
+Vue.component('comparison-table', {
+    props: {
+        props: Array
+    },
+    template: `
+      <table>
+        <tr>
+          <td></td>
+          <th v-for="(_, key) in props[0].values">Setup {{ key + 1 }}</th>
+        </tr>
+        <tr is=comparison-prop v-for="row in props" v-key="row.name" v-if="row.display" v-bind="row"></tr>
+      </table>`
+});
+
 var app = new Vue({
     el: '#container',
     data: {
@@ -245,7 +286,57 @@ var app = new Vue({
                     displayprops: []
                 }
             ]
-        ]
+        ],
+        comparisons: {
+            summary: [
+                {
+                    name: "Base points",
+                    nametitle: "Points awarded for driver/kart/glider at the beginning of the race",
+                    values: [
+                        { value: "1357", highlight: true },
+                        { value: "1257" }
+                    ],
+                    display: true
+                },
+                {
+                    name: "Frenzy chance increase",
+                    nametitle: "Bonus added to the base chance of rolling a frenzy",
+                    values: [
+                        { value: "+4%", highlight: true },
+                        { value: "+4%", highlight: true }
+                    ],
+                    display: true
+                },
+                {
+                    name: "Action points multiplier",
+                    nametitle: "Multiplier applied to each action's base points",
+                    values: [
+                        { value: "×1.8" },
+                        { value: "×2.0", highlight: true }
+                    ],
+                    display: true
+                },
+                {
+                    name: "Combo time multiplier",
+                    nametitle: "Time increase for combos (over base ~1 second)",
+                    values: [
+                        { value: "×2.2", highlight: true },
+                        { value: "×2.2", highlight: true }
+                    ],
+                    display: true
+                },
+                {
+                    name: "Bonus-points boost",
+                    nametitle: "Bonus points awarded for every action",
+                    values: [
+                        { value: "+11.4", highlight: true },
+                        { value: "+11.4", highlight: true }
+                    ],
+                    display: true
+                }
+            ],
+            points: []
+        }
     }
 });
 
@@ -320,14 +411,37 @@ function loadActionData()
             let points = +rawaction.shift();
             let skill = rawaction.shift();
             if (skill === '$')
-                skill = actionname;
+                skill = actionname.replace(/ accuracy| strike!/, '');
             else if (skill === '')
                 skill = 'N/A';
+            else if (!skill) {
+                actionobj.points = [points];
+                continue;
+            }
             actionobj.bonusskill = skill;
             actionobj.points = [points, ...rawaction.splice(0, 3).map(Number)];
         }
         
         console.log("actions:", window.actiondata = actiondata);
+        for (let action of ["Traffic cone", "Mini-Turbo", "Dash Panel", "Jump Boost", "Rocket Start", "1st place!"])
+            app.comparisons.points.push({
+                name: action,
+                nametitle: {"1st place!":"Points awarded for getting 1st at the end of lap 1 (or sections 1 and 2)"}[action],
+                values: [
+                    { value: Math.ceil(actiondata[action].points[0] * 2.2 + 2) + "", highlight: true },
+                    { value: Math.ceil(actiondata[action].points[0] * 2.1) + "" }
+                ],
+                display: true
+            });
+        app.comparisons.points.push({
+            name: "1st place bonus-points boost",
+            nametitle: "Points awarded at the end of the race for each action performed",
+            values: [
+                { value: "+2.0", highlight: true },
+                { value: "+0.0" }
+            ],
+            display: true
+        });
         loadDKGData();
     });
 }
@@ -389,7 +503,6 @@ function setupMenu()
     
     let urlParams = new URLSearchParams(window.location.search);
     for (let [name, value] of urlParams.entries()) {
-        console.log(name, value)
         if (name === 'course') {
             let track = maptrack(value);
             $('#select-track').val(track.slice(0, -1).trim());
@@ -560,7 +673,8 @@ function onInput()
                     });
                 }
                 else {
-                    item.calcprops.skillpoints = actiondata[item.skill].points[item.rarity];
+                    let action = Object.keys(actiondata).find(x => actiondata[x].bonusskill === item.skill);
+                    item.calcprops.skillpoints = actiondata[action].points[item.rarity];
                     dp.push({
                         name: item.skill + " bonus",
                         value: "+" + item.calcprops.skillpoints
@@ -569,7 +683,7 @@ function onInput()
                 
                 dp.push({
                     name: "Bonus-points boost",
-                    nametitle: "Bonus points given for every action",
+                    nametitle: "Bonus points awarded for every action",
                     value: item.fulltier === 3 ? "+" + item.calcprops.bpb : "none",
                     valuetitle: item.fulltier === 3 ? item.level === "1" ? "Item must be level 2 or above to receive bonus-points boost" : undefined : "Item must be top-tier to receive bonus-points boost"
                 });
