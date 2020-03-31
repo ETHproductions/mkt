@@ -6,17 +6,17 @@ Vue.component('dkg-input', {
     data: function () {
         let minpts = this.type == "driver" ? 400 : 200;
         return {
-            klass: 'input-' + this.side,
+            klass: 'input-' + this.side + ' ' + this.type,
             id: 'select-' + this.side + '-' + this.type,
             minpts: minpts
         }
     },
     template: `
       <div class="dkg-input">
-        <select :class="klass + ' select-' + type" :id="id + '-name'"></select>
+        <select :class="klass + '-name'" :id="id + '-name'"></select>
         <br>
-        lv. <input :class="klass" :id="id + '-level'" type=number value=1 min=1 max=6>
-        | <input :class="klass" :id="id + '-points'" type=number :value="minpts" :min="minpts" :max="minpts*2"> pts
+        lv. <select :class="klass + ' number'" :id="id + '-level'"></select>
+        | <select :class="klass + ' number'" :id="id + '-points'"></select> pts
       </div>`
 });
 
@@ -167,40 +167,40 @@ var app = new Vue({
                 {
                     type: "driver",
                     name: "Baby Mario",
-                    rarity: 1,
+                    rarity: 0,
                     skill: "Boomerang Flower",
                     level: 0,
                     points: 0,
                     tier: 0,
                     tierboost: "",
                     fulltier: 0,
-                    bpb: 0,
+                    calcprops: { bpb: 0, items: 0, frenzyinc: 0, skillpoints: 0 },
                     displayprops: []
                 },
                 {
                     type: "kart",
                     name: "Pipe Frame",
-                    rarity: 1,
+                    rarity: 0,
                     skill: "Slipstream",
                     level: 0,
                     points: 0,
                     tier: 0,
                     tierboost: "",
                     fulltier: 0,
-                    bpb: 0,
+                    calcprops: { bpb: 0, multiplier: 0, skillpoints: 0 },
                     displayprops: []
                 },
                 {
                     type: "glider",
                     name: "Super Glider",
-                    rarity: 1,
+                    rarity: 0,
                     skill: "Green Shell",
                     level: 0,
                     points: 0,
                     tier: 0,
                     tierboost: "",
                     fulltier: 0,
-                    bpb: 0,
+                    calcprops: { bpb: 0, multiplier: 0, combo: 0, skillpoints: 0 },
                     displayprops: []
                 }
             ],
@@ -208,40 +208,40 @@ var app = new Vue({
                 {
                     type: "driver",
                     name: "Baby Mario",
-                    rarity: 1,
+                    rarity: 0,
                     skill: "Boomerang Flower",
                     level: 0,
                     points: 0,
                     tier: 0,
                     tierboost: "",
                     fulltier: 0,
-                    bpb: 0,
+                    calcprops: { bpb: 0, items: 0, frenzyinc: 0, skillpoints: 0 },
                     displayprops: []
                 },
                 {
                     type: "kart",
                     name: "Pipe Frame",
-                    rarity: 1,
+                    rarity: 0,
                     skill: "Slipstream",
                     level: 0,
                     points: 0,
                     tier: 0,
                     tierboost: "",
                     fulltier: 0,
-                    bpb: 0,
+                    calcprops: { bpb: 0, multiplier: 0, skillpoints: 0 },
                     displayprops: []
                 },
                 {
                     type: "glider",
                     name: "Super Glider",
-                    rarity: 1,
+                    rarity: 0,
                     skill: "Green Shell",
                     level: 0,
                     points: 0,
                     tier: 0,
                     tierboost: "",
                     fulltier: 0,
-                    bpb: 0,
+                    calcprops: { bpb: 0, combotime: 0, skillpoints: 0 },
                     displayprops: []
                 }
             ]
@@ -337,15 +337,17 @@ function loadDKGData()
     ["driver", "kart", "glider"].forEach(type => fetchLocal('data/' + type + 's.csv').then(res => res.text()).then(text =>
     {
         let rawdata = text.split("\r\n").map(l => l.split(","));
-        let rows = [], data = {}, curritem;
+        let rows = [], data = {map:[]}, curritem;
         
         for (let i = 0; i < rawdata.length; i++)
         {
-            curritem = data[rawdata[i][0]] = {};
-            curritem.skill = rawdata[i][1];
-            curritem.rarity = +rawdata[i][2];
+            curritem = data[rawdata[i][1]] = {};
+            curritem.id = +rawdata[i][0];
+            data.map[curritem.id] = rawdata[i][1];
+            curritem.skill = rawdata[i][2];
+            curritem.rarity = +rawdata[i][3];
             curritem.tracks_tier1 = [], curritem.tracks_tier2 = [];
-            rawdata[i].slice(3).forEach(course =>
+            rawdata[i].slice(4).forEach(course =>
             {
                 if (course.slice(-1) == "+")
                     curritem.tracks_tier1.push(maptrack(course));
@@ -373,8 +375,12 @@ function setupMenu()
     {
         for (let item in window[j + "data"])
         {
-            $(`.select-${ j }`).append(`<option value="${ item }">${ item }</option>`);
+            if (item === 'map') continue;
+            $(`.${ j }-name`).append(`<option value="${ item }">${ item }</option>`);
         }
+        for (let side of [1, 2])
+            for (let i = 1; i <= 6; i++)
+                $(`#select-${ side }-${ j }-level`).append(`<option value="${ i }">${ i }</option>`);
     }
     for (let item in coursedata)
     {
@@ -385,6 +391,31 @@ function setupMenu()
     
     $("select").on("input", onInput);
     $("input").on("input", onInput);
+}
+
+function calcPoints(type, rarity, index) {
+    if (type === 'driver') {
+        return [,400,450,500][rarity] + [,8,9,12][rarity] * index; 
+    }
+    else if (rarity === 2) {
+        return 220 + 4 * index + Math.max(index - 15, 0);
+    }
+    else {
+        return [,200,,250][rarity] + [,4,,6][rarity] * index;
+    }
+}
+function uncalcPoints(type, rarity, points) {
+    if (type === 'driver') {
+        return (points - [,400,450,500][rarity]) / [,8,9,12][rarity];
+    }
+    else if (rarity === 2) {
+        if (points > 280)
+            return (points - 205) / 5;
+        return (points - 220) / 4;
+    }
+    else {
+        return (points - [,200,,250][rarity]) / [,4,,6][rarity];
+    }
 }
 
 function onInput()
@@ -447,6 +478,15 @@ function onInput()
                     Vue.set(item, k, app.setups[side][input]);
                     if (k === "name")
                     {
+                        if (item.rarity !== data.rarity)
+                        {
+                            $(`#select-${ side }-${ type }-points`).empty();
+                            let points = (item.type === 'driver'? [,600,675,700] : [,300,330,400])[data.rarity];
+                            for (let i = 25; i >= 0; i--) {
+                                let points = calcPoints(item.type, data.rarity, i);
+                                $(`#select-${ side }-${ type }-points`).append(`<option value="${ points }">${ points }</option>`);
+                            }
+                        }
                         item.rarity = data.rarity;
                         item.skill = data.skill;
                     }
@@ -454,8 +494,8 @@ function onInput()
             }
             let data = window[type + "data"][app.setups[side][type + "-name"]];
             if (changed || updatecourse) {
-                item.tier = item.fulltier = data.tracks_tier2.includes(course) ? 3: data.tracks_tier1.includes(course) ? 2 : 1;
-                item.bpb = Math.round(item.points / 200 * (item.level - 1) * 1000) / 1000;
+                item.tier = item.fulltier = data.tracks_tier1.includes(course) ? 3 : data.tracks_tier2.includes(course) ? 2 : 1;
+                item.calcprops.bpb = Math.round(item.points / 200 * (item.level - 1) * 1000) / 1000;
                 let dp = item.displayprops = [];
                 dp.push({
                     name: "Base points",
@@ -467,16 +507,18 @@ function onInput()
                 });
                 
                 if (item.type === 'kart') {
+                    item.calcprops.multiplier = Math.round((1 + ((item.level >> 1) + item.rarity - 1) / 20) * (item.fulltier + 1) / 2 * 1000) / 1000;
                     dp.push({
                         name: "Action multiplier",
                         nametitle: "Multiplier applied to the base points of each action",
-                        value: "×" + Math.round((1 + ((item.level >> 1) + item.rarity - 1) / 20) * (item.fulltier + 1) / 2 * 1000) / 1000
+                        value: "×" + item.calcprops.multiplier
                     });
                 }
                 if (item.type === 'glider') {
+                    item.calcprops.combotime = Math.round((1 + ((item.level >> 1) + item.rarity - 1) / 20) * (item.fulltier + 1) / 2 * 1000) / 1000;
                     dp.push({
                         name: "Combo time",
-                        value: "×" + Math.round((1 + ((item.level >> 1) + item.rarity - 1) / 20) * (item.fulltier + 1) / 2 * 1000) / 1000
+                        value: "×" + item.calcprops.combotime
                     });
                     dp.push({
                         name: "Combo multiplier",
@@ -484,6 +526,7 @@ function onInput()
                     });
                 }
                 if (item.type === 'driver') {
+                    item.calcprops.frenzyinc = [,[0,2,4,6],[1,3,5,8],[2,4,7,10]][item.rarity][item.level >> 1];
                     dp.push({
                         name: "Items",
                         value: String(item.fulltier)
@@ -491,20 +534,21 @@ function onInput()
                     dp.push({
                         name: "Frenzy increase",
                         nametitle: "Increase above base frenzy chance",
-                        value: item.fulltier === 3 ? "+" + [,[0,2,4,6],[1,3,5,8],[2,4,7,10]][item.rarity][item.level >> 1] + "%" : "N/A"
+                        value: item.fulltier === 3 ? "+" + item.calcprops.frenzyinc + "%" : "N/A"
                     });
                 }
                 else {
+                    item.calcprops.skillpoints = actiondata[item.skill].points[item.rarity];
                     dp.push({
                         name: item.skill + " bonus",
-                        value: "+" + actiondata[item.skill].points[item.rarity]
+                        value: "+" + item.calcprops.skillpoints
                     });
                 }
                 
                 dp.push({
                     name: "Bonus-points boost",
                     nametitle: "Bonus points given for every action",
-                    value: item.fulltier === 3 ? "+" + item.bpb : "none",
+                    value: item.fulltier === 3 ? "+" + item.calcprops.bpb : "none",
                     valuetitle: item.fulltier === 3 ? item.level === "1" ? "Item must be level 2 or above to receive bonus-points boost" : undefined : "Item must be top-tier to receive bonus-points boost"
                 });
             }

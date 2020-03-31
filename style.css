@@ -24,7 +24,7 @@ select {
   width: 200px;
   margin-bottom: 8px;
 }
-input {
+select.number {
   width: 50px;
 }
 .dkg-input {
