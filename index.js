@@ -387,6 +387,25 @@ function setupMenu()
         $("#select-track").append(`<option value="${ item }">${ item }</option>`);
     }
     
+    let urlParams = new URLSearchParams(window.location.search);
+    for (let [name, value] of urlParams.entries()) {
+        console.log(name, value)
+        if (name === 'course') {
+            let track = maptrack(value);
+            $('#select-track').val(track.slice(0, -1).trim());
+            $('#select-course').val(track.slice(-1));
+        }
+        else if (name.slice(0, 5) === 'setup') {
+            let side = +name.slice(5);
+            for (let type of ['driver', 'kart', 'glider']) {
+                $(`#select-${ side }-${ type }-name`).val(window[type + 'data'].map[parseInt(value.slice(0, 2), 16)]);
+                $(`#select-${ side }-${ type }-level`).val(parseInt(value[2], 16) >> 1);
+                setTimeout(`$('#select-${ side }-${ type }-points').val(${ parseInt(value.slice(2, 4), 16) & 31 })`, 0);
+                value = value.slice(4);
+            }
+        }
+    }
+    
     onInput();
     
     $("select").on("input", onInput);
@@ -470,6 +489,9 @@ function onInput()
             {
                 let input = type + '-' + k;
                 let val = $(`#select-${ side }-${ input }`).val();
+                if (k === 'points')
+                    val = calcPoints(type, app.setups[side][j].rarity, val);
+                
                 if (app.setups[side][input] !== val)
                 {
                     changed = true;
@@ -481,10 +503,9 @@ function onInput()
                         if (item.rarity !== data.rarity)
                         {
                             $(`#select-${ side }-${ type }-points`).empty();
-                            let points = (item.type === 'driver'? [,600,675,700] : [,300,330,400])[data.rarity];
                             for (let i = 25; i >= 0; i--) {
                                 let points = calcPoints(item.type, data.rarity, i);
-                                $(`#select-${ side }-${ type }-points`).append(`<option value="${ points }">${ points }</option>`);
+                                $(`#select-${ side }-${ type }-points`).append(`<option value="${ i }">${ points }</option>`);
                             }
                         }
                         item.rarity = data.rarity;
@@ -534,7 +555,8 @@ function onInput()
                     dp.push({
                         name: "Frenzy increase",
                         nametitle: "Increase above base frenzy chance",
-                        value: item.fulltier === 3 ? "+" + item.calcprops.frenzyinc + "%" : "N/A"
+                        value: item.fulltier === 3 ? "+" + item.calcprops.frenzyinc + "%" : "N/A",
+                        valuetitle: item.fulltier === 3 ? undefined : "Driver must be top-tier to receive frenzies"
                     });
                 }
                 else {
@@ -551,9 +573,26 @@ function onInput()
                     value: item.fulltier === 3 ? "+" + item.calcprops.bpb : "none",
                     valuetitle: item.fulltier === 3 ? item.level === "1" ? "Item must be level 2 or above to receive bonus-points boost" : undefined : "Item must be top-tier to receive bonus-points boost"
                 });
+                
+                encodeLink();
             }
         }
     }
+}
+
+function encodeLink() {
+    let hash = '?course=';
+    hash += app.setups[0].course.match(/[\w']+/g).map(x => x[0]).join("") + app.setups[0].variant;
+    for (i = 1; i < app.setups.length; i++) {
+        let setup = app.setups[i];
+        hash += '&setup' + i + '=';
+        for (let j = 0; j < 3; j++) {
+            hash += (window[setup[j].type + 'data'][setup[j].name].id + 256).toString(16).slice(1);
+            hash += (uncalcPoints(setup[j].type, setup[j].rarity, setup[j].points) + setup[j].level * 32).toString(16);
+        }
+    }
+    
+    window.history.replaceState(null, '', hash);
 }
 
 let startTime = new Date;
