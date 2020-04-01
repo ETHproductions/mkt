@@ -113,7 +113,7 @@ Vue.component('imagebox', {
             return `img/${ this.type }s/${ this.name.replace(/\?/g, "Q") }.png`;
         },
         raritytitle: function () {
-            return [, "Normal", "Super", "High-End"][this.rarity];
+            return ["default", "Normal", "Super", "High-End"][this.rarity];
         },
         rarityimg: function () {
             return `img/items/${ this.raritytitle }.png`;
@@ -224,7 +224,7 @@ var app = new Vue({
     el: '#container',
     data: {
         setups: [
-            { course: "", variant: "", fullname: "" },
+            { tour: -1, cup: -1, index: -1, course: "", variant: "", fullname: "" },
             [
                 buildDKG("driver"),
                 buildDKG("kart"),
@@ -254,9 +254,9 @@ function fetchLocal(url)
         xhr.send();
     });
 }
-function loadTracks()
+function loadCourseData()
 {
-    fetchLocal('data/tracks.csv').then(response => response.text()).then(text => {
+    fetchLocal('data/courses.csv').then(response => response.text()).then(text => {
         let rawdata = text.split("\r\n").map(l => l.split(","));
         let rows = [], trackmap = {}, coursedata = {}, currtrack, currcourse;
         
@@ -283,7 +283,7 @@ function loadTracks()
         }
         
         console.log("tracks:", window.coursedata = coursedata);
-        window.maptrack = function maptrack(track)
+        window.maptrack = function maptrack(track, display = false)
         {
             track = track.replace(/\+$/, "");
             let variant = track.slice(-1);
@@ -293,11 +293,40 @@ function loadTracks()
                 variant = "N";
             
             track = trackmap[track] || "Bowser's Castle 1";
-            if (/\D$/.test(track))
+            if (/\D$/.test(track) && !(variant === "N" && display))
                 track += " ";
-            track += variant;
+            track += display ? variant === "N" ? "" : variant === "X" ? "R/T" : variant : variant;
             return track;
         };
+        loadTourData();
+    });
+}
+function loadTourData()
+{
+    fetchLocal('data/tours.csv').then(response => response.text()).then(text => {
+        let rawdata = text.split("\r\n").map(l => l.split(","));
+        let tourdata = [];
+        
+        for (let i = 0; i < rawdata.length; i++)
+        {
+            let rawtour = rawdata[i];
+            let tour = tourdata[i] = {};
+            
+            tour.name = rawtour.shift();
+            tour.date = new Date(rawtour.shift() + "T06:00:00Z");
+            
+            tour.spotlights = [rawtour.splice(0, 3), rawtour.splice(0, 3)];
+            tour.cups = [];
+            while (rawtour.length) {
+                let cup = {};
+                tour.cups.push(cup);
+                cup.name = rawtour[0] + " Cup";
+                cup.favored = rawtour.splice(0, 3);
+                cup.courses = rawtour.splice(0, 3);
+            }
+        }
+        
+        console.log("tours:", window.tourdata = tourdata);
         loadActionData();
     });
 }
@@ -365,12 +394,20 @@ function loadDKGData()
 function cloneSelect(n)
 {
     $(`.input${ n }`).each((_, el) => el.value = $("#" + el.id.split(n).join(n^1)).val())
-    onInput();
+    refreshSetups();
 }
 function setupMenu()
 {
     console.log(`Data loaded in ${ new Date - startTime }ms`);
     
+    for (let i = tourdata.length; i-- > 0; )
+    {
+        $("#select-tour").append(`<option value="${ i }">${ tourdata[i].name }</option>`);
+    }
+    for (let item in coursedata)
+    {
+        $("#select-track").append(`<option value="${ item }">${ item }</option>`);
+    }
     for (let j of ["driver", "kart", "glider"])
     {
         for (let item in window[j + "data"])
@@ -378,31 +415,64 @@ function setupMenu()
             if (item === 'map') continue;
             $(`.${ j }-name`).append(`<option value="${ item }">${ item }</option>`);
         }
-        for (let side of [1, 2]) {
+        for (let side of [1, 2])
+        {
             for (let i = 1; i <= 6; i++)
                 $(`#select-${ side }-${ j }-level`).append(`<option value="${ i }">${ i }</option>`);
-            for (let rarity = 1; rarity <= 3; rarity++) {
-                for (let i = 25; i >= 0; i--) {
+            for (let rarity = 1; rarity <= 3; rarity++)
+            {
+                for (let i = 25; i >= 0; i--)
+                {
                     $(`#select-${ side }-${ j }-points-${ rarity }`).append(`<option value="${ i }">${ calcPoints(j, rarity, i) }</option>`);
                 }
             }
         }
     }
-    for (let item in coursedata)
-    {
-        $("#select-track").append(`<option value="${ item }">${ item }</option>`);
-    }
     
     let urlParams = new URLSearchParams(window.location.search);
-    for (let [name, value] of urlParams.entries()) {
-        if (name === 'course') {
+    for (let [name, value] of urlParams.entries())
+    {
+        if (name === 'tour')
+        {
+            if (!/^[0-9a-f]{4}$/i.test(value))
+                value = 'fffb';
+            
+            let tourid = parseInt(value.slice(0, 2), 16);
+            if (tourid >= tourdata.length)
+            {
+                $('#select-tour').val(-1);
+                onTourChange(false);
+            }
+            else
+            {
+                $('#select-tour').val(tourid);
+                onTourChange(false);
+                
+                value = parseInt(value.slice(2, 4), 16);
+                let cup = value >> 2, index = value & 3;
+                if (cup >= tourdata[tourid].cups.length) cup = 0;
+                if (index === 3) index = 0;
+
+                $('#select-cup').val(cup);
+                onCupChange(false);
+                
+                $('#select-cup-course').val(index);
+                onCourseChange(false);
+            }
+                
+        }
+        else if (name === 'course')
+        {
             let track = maptrack(value);
             $('#select-track').val(track.slice(0, -1).trim());
             $('#select-course').val(track.slice(-1));
         }
-        else if (name.slice(0, 5) === 'setup') {
+        else if (name.slice(0, 5) === 'setup')
+        {
             let side = +name.slice(5);
-            for (let i = 0; i < 3; i++) {
+            if (![1, 2].includes(side)) continue;
+            for (let i = 0; i < 3; i++)
+            {
                 let type = ['driver', 'kart', 'glider'][i];
                 if (value.length < 4) value = '0139';
                 
@@ -413,7 +483,8 @@ function setupMenu()
                 $(`#select-${ side }-${ type }-level`).val(level);
                 
                 let rarity = window[type + 'data'][name].rarity;
-                if (rarity !== 1) {
+                if (rarity !== 1)
+                {
                     $(`#select-${ side }-${ type }-points-1`).hide();
                     $(`#select-${ side }-${ type }-points-${ rarity }`).show();
                 }
@@ -425,10 +496,9 @@ function setupMenu()
         }
     }
     
-    onInput();
+    onCourseChange();
     
-    $("select").on("input", onInput);
-    $("input").on("input", onInput);
+    $(".dkg-input select").on("input", refreshSetups);
 }
 
 function calcPoints(type, rarity, index) {
@@ -456,46 +526,105 @@ function uncalcPoints(type, rarity, points) {
     }
 }
 
-function onInput()
+function onTourChange(propagate = true)
 {
-    let updatecourse = false, course = app.setups[0].fullname;
-    let val = $("#select-track").val()
-    if (app.setups[0].course !== val)
+    let newtourid = +$("#select-tour").val(),
+        course = app.setups[0],
+        newtour = tourdata[newtourid]; 
+    
+    if (course.tour === -1 && newtourid !== -1)
     {
-        updatecourse = true;
-        app.setups[0].course = val;
-        if (coursedata[val] && "Z" in coursedata[val])
+        $("#select-course-full").hide();
+        $("#select-course-tour").show();
+    }
+    
+    if (newtourid === -1)
+    {
+        course.tour = -1;
+        course.cup = -1;
+        course.index = -1;
+        $("#select-course-tour").hide();
+        $("#select-course-full").show();
+        $("#select-track").val(course.course);
+        $("#select-course").val(course.variant);
+        propagate && onCourseChange();
+    }
+    else
+    {
+        course.tour = newtourid;
+        course.cup = 0;
+        $("#select-cup").empty();
+        for (let i in newtour.cups)
         {
-            $("#course-rt").prop("disabled", false);
+            $("#select-cup").append(`<option value="${ i }">${ newtour.cups[i].name }</option>`);
         }
-        else
+        propagate && onCupChange();
+    }
+}
+function onCupChange(propagate = true)
+{
+    let newcupid = $("#select-cup").val(),
+        course = app.setups[0],
+        newcup = tourdata[course.tour].cups[newcupid];
+    
+    course.cup = newcupid;
+    course.index = 0;
+    course.fullname = maptrack(newcup.courses[0]);
+    $("#select-cup-course").empty();
+    for (let i in newcup.courses)
+    {
+        $("#select-cup-course").append(`<option value="${ i }">${ maptrack(newcup.courses[i], true) }</option>`);
+    }
+    propagate && onCourseChange();
+}
+function onCourseChange(propagate = true) {
+    let data = app.setups[0];
+    let oldcourse = data.course, oldvariant = data.variant;
+    let course, variant;
+    
+    if (data.tour === -1)
+    {
+        course = $("#select-track").val();
+        variant = $("#select-course").val();
+        
+        if (oldcourse !== course)
         {
-            $("#course-rt").prop("disabled", "disabled");
-            if ($("#select-course").val() == null)
+            data.course = course;
+            if (coursedata[course] && "Z" in coursedata[course])
             {
-                $("#select-course").val("N");
-                app.setups[0].variant = "N";
+                $("#course-rt").prop("disabled", false);
+            }
+            else
+            {
+                $("#course-rt").prop("disabled", "disabled");
+                if ($("#select-course").val() == null)
+                {
+                    $("#select-course").val("N");
+                    data.variant = "N";
+                }
             }
         }
+        data.variant = variant;
     }
-
-    val = $("#select-course").val();
-    if (app.setups[0].variant !== val)
+    else
     {
-        updatecourse = true;
-        app.setups[0].variant = val;
+        let tour = app.setups[0].tour,
+            cup = app.setups[0].cup;
+        data.index = +$("#select-cup-course").val();
+        course = maptrack(tourdata[tour].cups[cup].courses[data.index]);
+        variant = course.slice(-1);
+        course = course.slice(0, -1).trim();
+        data.course = course;
+        data.variant = variant;
     }
     
-    if (updatecourse)
-    {
-        course = app.setups[0].course;
-        if (/\D$/.test(course))
-            course += " ";
-        course += app.setups[0].variant;
-        app.setups[0].fullname = course;
-        $("#result-track").html(`<img src="img/courses/${ course }.png">`);
-    }
+    data.fullname = course + (/\D$/.test(course) ? " " : "") + variant;
+    $("#result-track").html(`<img src="img/courses/${ data.fullname }.png">`);
     
+    propagate && refreshSetups();
+}
+function refreshSetups()
+{
     for (let side of [1, 2])
     {
         let setup = app.setups[side];
@@ -528,8 +657,21 @@ function onInput()
                 }
             }
             let data = window[type + "data"][item.name];
-            if (changed || updatecourse) {
-                item.tier = item.fulltier = data.tracks_ttier.includes(course) ? 3 : data.tracks_mtier.includes(course) ? 2 : 1;
+            if (true) {
+                let course = app.setups[0], tour = tourdata[course.tour];
+                
+                item.tier = item.fulltier = data.tracks_ttier.includes(course.fullname) ? 3 : data.tracks_mtier.includes(course.fullname) ? 2 : 1;
+                
+                item.tierboost = undefined;
+                if ((course.index === 1 && tour.spotlights[0].includes(item.name))
+                 || (course.index === 2 && tour.spotlights[1].includes(item.name)))
+                    item.tierboost = "spotlight",
+                    item.fulltier++;
+                if (tour && tour.cups[course.cup].favored.includes(item.name))
+                    item.tierboost = item.tierboost ? "cup & spotlight" : "cup",
+                    item.fulltier++;
+                item.fulltier = Math.min(item.fulltier, 3);
+                
                 item.calcprops.bpb = Math.round(item.points / 200 * (item.level - 1) * 1000) / 1000;
                 let dp = item.displayprops = [];
                 dp.push({
@@ -672,16 +814,25 @@ function onInput()
     });
 }
 
-function encodeLink() {
-    let query = '?course=';
+function to8bHex(value)
+{
+    return (value + 256).toString(16).slice(-2);
+}
+function encodeLink()
+{
+    let query = '?tour=';
+    query += to8bHex(app.setups[0].tour) + to8bHex(app.setups[0].cup * 4 + app.setups[0].index);
+    query += '&course='
     query += app.setups[0].course.match(/[\w']+/g).map(x => x[0]).join("") + app.setups[0].variant;
-    for (i = 1; i < app.setups.length; i++) {
+    for (i = 1; i < app.setups.length; i++)
+    {
         let setup = app.setups[i];
         query += '&setup' + i + '=';
-        for (let j = 0; j < 3; j++) {
+        for (let j = 0; j < 3; j++)
+        {
             let item = setup[j];
-            query += (window[item.type + 'data'][item.name].id + 256).toString(16).slice(1);
-            query += (uncalcPoints(item.type, item.rarity, item.points) + item.level * 32).toString(16);
+            query += to8bHex(window[item.type + 'data'][item.name].id + 256);
+            query += to8bHex(uncalcPoints(item.type, item.rarity, item.points) + item.level * 32);
         }
     }
     
@@ -689,4 +840,4 @@ function encodeLink() {
 }
 
 let startTime = new Date;
-loadTracks();
+loadCourseData();

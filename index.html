@@ -13,15 +13,29 @@
 
 <div id="track">
   <h3>Course</h3>
-  <select id="select-track"></select>
-  <br>
-  Variant:
-  <select id="select-course">
-    <option value="N">N</option>
-    <option value="R">R</option>
-    <option value="T">T</option>
-    <option id="course-rt" value="Z">R/T</option>
+  <select id="select-tour" onchange="onTourChange()">
+    <option value="-1">No tour</option>
   </select>
+  
+  <div id="select-course-tour" class="hidden">
+    <select id="select-cup" onchange="onCupChange()"></select>
+    <br>
+    <div id="result-cup"></div>
+    <select id="select-cup-course" onchange="onCourseChange()"></select>
+    <div id="result-cup-course"></div>
+  </div>
+  
+  <div id="select-course-full">
+    <select id="select-track" onchange="onCourseChange()"></select>
+    <br>
+    Variant:
+    <select id="select-course" onchange="onCourseChange()">
+      <option value="N">N</option>
+      <option value="R">R</option>
+      <option value="T">T</option>
+      <option id="course-rt" value="Z">R/T</option>
+    </select>
+  </div>
   <div id="result-track"></div>
 </div>
 
