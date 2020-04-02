@@ -4,11 +4,9 @@ Vue.component('dkg-input', {
         side: Number // 1 for left, 2 for right
     },
     data: function () {
-        let minpts = this.type == "driver" ? 400 : 200;
         return {
             klass: 'input-' + this.side + ' ' + this.type,
-            id: 'select-' + this.side + '-' + this.type,
-            minpts: minpts
+            id: 'select-' + this.side + '-' + this.type
         }
     },
     template: `
@@ -27,7 +25,6 @@ Vue.component('select-dkg', {
         side: Number
     },
     data: function () {
-        let minpts = this.type == "driver" ? 400 : 200;
         return {
             id: 'select-' + this.side + '-dkg',
             onclick: 'cloneSelect(-' + this.side + ')'
@@ -41,7 +38,7 @@ Vue.component('select-dkg', {
         <dkg-input type="glider" :side="side"></dkg-input>
         <button :onclick="onclick">Copy other side</button>
       </div>`
-})
+});
 
 Vue.component('tier-marker', {
     props: {
@@ -99,7 +96,7 @@ Vue.component('infobox', {
           <tr is="dkg-prop" v-for="prop in object.displayprops" :key="prop.name" v-bind="prop"></tr>
         </tbody>
       </table>`
-})
+});
 
 Vue.component('imagebox', {
     props: {
@@ -210,13 +207,11 @@ function buildDKG(type) {
         displayprops: []
     };
     if (type === "driver")
-        obj.calcprops.items = 0,
         obj.calcprops.frenzyinc = 0;
     if (type === "kart")
         obj.calcprops.multiplier = 0;
     if (type === "glider")
-        obj.calcprops.combotime = 0,
-        obj.calcprops.multiplier = 0;
+        obj.calcprops.combotime = 0;
     return obj;
 }
 
@@ -287,7 +282,7 @@ function loadCourseData()
         {
             track = track.replace(/\+$/, "");
             let variant = track.slice(-1);
-            if ("NRTX".includes(variant))
+            if ("NRTZ".includes(variant))
                 track = track.slice(0, -1);
             else
                 variant = "N";
@@ -295,7 +290,7 @@ function loadCourseData()
             track = trackmap[track] || "Bowser's Castle 1";
             if (/\D$/.test(track) && !(variant === "N" && display))
                 track += " ";
-            track += display ? variant === "N" ? "" : variant === "X" ? "R/T" : variant : variant;
+            track += display ? variant === "N" ? "" : variant === "Z" ? "R/T" : variant : variant;
             return track;
         };
         loadTourData();
@@ -344,9 +339,7 @@ function loadActionData()
             
             let points = +rawaction.shift();
             let skill = rawaction.shift();
-            if (skill === '$')
-                skill = actionname.replace(/ accuracy| strike!/, '');
-            else if (skill === '')
+            if (skill === '')
                 skill = 'N/A';
             else if (!skill) {
                 actionobj.points = [points];
@@ -357,6 +350,39 @@ function loadActionData()
         }
         
         console.log("actions:", window.actiondata = actiondata);
+        
+        loadItemData();
+    });
+}
+function loadItemData()
+{
+    fetchLocal('data/items.csv').then(response => response.text()).then(text => {
+        let rawdata = text.split("\r\n").map(l => l.split(","));
+        let itemdata = {};
+        
+        for (let i = 1; i < rawdata.length; i++)
+        {
+            let rawitem = rawdata[i];
+            let itemobj = itemdata[rawitem.shift()] = {};
+            itemobj.avpos = +rawitem.shift();
+            
+            let actions = rawitem.shift().split("|");
+            itemobj.actionsn = {};
+            for (let action of actions)
+            {
+                let [actionname, actioncount] = action.split("@");
+                itemobj.actionsn[actionname] = actioncount;
+            }
+            actions = rawitem.shift().split("|");
+            itemobj.actionsf = {};
+            for (let action of actions)
+            {
+                let [actionname, actioncount] = action.split("@");
+                itemobj.actionsf[actionname] = actioncount;
+            }
+        }
+        
+        console.log("items:", window.itemdata = itemdata);
         loadDKGData();
     });
 }
@@ -370,13 +396,14 @@ function loadDKGData()
         
         for (let i = 0; i < rawdata.length; i++)
         {
-            curritem = data[rawdata[i][1]] = {};
-            curritem.id = +rawdata[i][0];
-            data.map[curritem.id] = rawdata[i][1];
-            curritem.skill = rawdata[i][2];
-            curritem.rarity = +rawdata[i][3];
+            let rawdkg = rawdata[i];
+            curritem = data[rawdkg[1]] = {};
+            curritem.id = +rawdkg[0];
+            data.map[curritem.id] = rawdkg[1];
+            curritem.skill = rawdkg[2];
+            curritem.rarity = +rawdkg[3];
             curritem.tracks_ttier = [], curritem.tracks_mtier = [];
-            rawdata[i].slice(4).forEach(course =>
+            rawdkg.slice(4).forEach(course =>
             {
                 if (course.slice(-1) == "+")
                     curritem.tracks_ttier.push(maptrack(course));
@@ -406,7 +433,7 @@ function setupMenu()
     }
     for (let item in coursedata)
     {
-        $("#select-track").append(`<option value="${ item }">${ item }</option>`);
+        $("#select-course").append(`<option value="${ item }">${ item }</option>`);
     }
     for (let j of ["driver", "kart", "glider"])
     {
@@ -464,8 +491,8 @@ function setupMenu()
         else if (name === 'course')
         {
             let track = maptrack(value);
-            $('#select-track').val(track.slice(0, -1).trim());
-            $('#select-course').val(track.slice(-1));
+            $('#select-course').val(track.slice(0, -1).trim());
+            $('#select-variant').val(track.slice(-1));
         }
         else if (name.slice(0, 5) === 'setup')
         {
@@ -545,8 +572,8 @@ function onTourChange(propagate = true)
         course.index = -1;
         $("#select-course-tour").hide();
         $("#select-course-full").show();
-        $("#select-track").val(course.course);
-        $("#select-course").val(course.variant);
+        $("#select-course").val(course.course);
+        $("#select-variant").val(course.variant);
         propagate && onCourseChange();
     }
     else
@@ -584,8 +611,8 @@ function onCourseChange(propagate = true) {
     
     if (data.tour === -1)
     {
-        course = $("#select-track").val();
-        variant = $("#select-course").val();
+        course = $("#select-course").val();
+        variant = $("#select-variant").val();
         
         if (oldcourse !== course)
         {
@@ -597,9 +624,9 @@ function onCourseChange(propagate = true) {
             else
             {
                 $("#course-rt").prop("disabled", "disabled");
-                if ($("#select-course").val() == null)
+                if ($("#select-variant").val() == null)
                 {
-                    $("#select-course").val("N");
+                    $("#select-variant").val("N");
                     data.variant = "N";
                 }
             }

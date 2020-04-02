@@ -1,37 +1,37 @@
-Dash Panel,10,$,5,10,15
-Jump Boost,20,$,4,6,8
-Mini-Turbo,5,$,2,3,4
+Dash Panel,10,Dash Panel,5,10,15
+Jump Boost,20,Jump Boost,4,6,8
+Mini-Turbo,5,Mini-Turbo,2,3,4
 Super Mini-Turbo,15,Mini-Turbo,2,3,4
 Ultra Mini-Turbo,30,Mini-Turbo,2,3,4
-Rocket Start,30,$,30,50,80
-Slipstream,30,$,10,20,40
-Banana accuracy,25,$,10,20,30
-Blooper accuracy,10,$,5,10,15
-Bob-omb accuracy,25,$,10,20,30
-Bullet Bill accuracy,25,$,10,20,30
-Coin,5,$,1,2,3
-Green Shell accuracy,25,$,10,20,30
-Lightning accuracy,5,$,3,5,8
-Mega Mushroom strike!,25,$,10,20,30
-Mushroom,10,$,5,10,15
-Red Shell accuracy,25,$,10,20,30
-Spiny Shell accuracy,25,$,10,20,30
-Super Horn accuracy,25,$,10,20,30
+Rocket Start,30,Rocket Start,30,50,80
+Slipstream,30,Slipstream,10,20,40
+Banana accuracy,25,Banana,10,20,30
+Blooper accuracy,10,Blooper,5,10,15
+Bob-omb accuracy,25,Bob-omb,10,20,30
+Bullet Bill accuracy,25,Bullet Bill,10,20,30
+Coin,5,Coin,1,2,3
+Green Shell accuracy,25,Green Shell,10,20,30
+Lightning accuracy,5,Lightning,3,5,8
+Mega Mushroom strike!,25,Mega Mushroom,10,20,30
+Mushroom,10,Mushroom,5,10,15
+Red Shell accuracy,25,Red Shell,10,20,30
+Spiny Shell accuracy,25,Spiny Shell,10,20,30
+Super Horn accuracy,25,Super Horn,10,20,30
 Destroyed a Spiny Shell,100,Super Horn,10,20,30
 Repelled a Blooper,100,Super Horn,10,20,30
-Bubble,10,$
-Dash Ring,10,$
-Birdo's Egg accuracy,25,$
+Bubble,10,Bubble
+Dash Ring,10,Dash Ring
+Birdo's Egg accuracy,25,Birdo's Egg
 Boomerang accuracy,25,Boomerang Flower
-Bowser's Shell accuracy,25,$
-Fire Flower accuracy,25,$
-Giant Banana accuracy,25,$
-Heart,25,$
-Heart accuracy,25,$
-Hammer accuracy,25,$
-Ice Flower accuracy,25,$
-Yoshi's Egg accuracy,25,$
-Super Star strike!,25,$
+Bowser's Shell accuracy,25,Bowser's Shell
+Fire Flower accuracy,25,Fire Flower
+Giant Banana accuracy,25,Giant Banana
+Heart,25,Heart
+Heart accuracy,25,Heart
+Hammer accuracy,25,Hammer
+Ice Flower accuracy,25,Ice Flower
+Yoshi's Egg accuracy,25,Yoshi's Egg
+Super Star strike!,25,Super Star
 Frenzy strike!,25
 Frenzy Finish,50
 Payback,50
