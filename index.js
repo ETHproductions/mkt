@@ -102,12 +102,16 @@ Vue.component('imagebox', {
     props: {
         type: String,
         name: String,
+        color: String,
         rarity: Number,
         skill: String
     },
     computed: {
         mainimg: function () {
-            return `img/${ this.type }s/${ this.name.replace(/\?/g, "Q") }.png`;
+            let img = this.name.replace(/\?/g, "Q");
+            if (img === "Pipe Frame" || img === "Super Glider")
+                img += " " + this.color;
+            return `img/${ this.type }s/${ img }.png`;
         },
         raritytitle: function () {
             return ["default", "Normal", "Super", "High-End"][this.rarity];
@@ -196,6 +200,7 @@ function buildDKG(type) {
     let obj = {
         type: type,
         name: "default",
+        color: "red",
         rarity: 0,
         skill: "default",
         level: 0,
@@ -398,12 +403,15 @@ function loadDKGData()
         {
             let rawdkg = rawdata[i];
             curritem = data[rawdkg[1]] = {};
-            curritem.id = +rawdkg[0];
-            data.map[curritem.id] = rawdkg[1];
-            curritem.skill = rawdkg[2];
-            curritem.rarity = +rawdkg[3];
+            curritem.id = +rawdkg.shift();
+            data.map[curritem.id] = rawdkg.shift();
+            curritem.skill = rawdkg.shift();
+            curritem.rarity = +rawdkg.shift();
+            if (type === "driver")
+                curritem.color = rawdkg.shift();
+            
             curritem.tracks_ttier = [], curritem.tracks_mtier = [];
-            rawdkg.slice(4).forEach(course =>
+            rawdkg.forEach(course =>
             {
                 if (course.slice(-1) == "+")
                     curritem.tracks_ttier.push(maptrack(course));
@@ -680,6 +688,12 @@ function refreshSetups()
                         }
                         item.rarity = data.rarity;
                         item.skill = data.skill;
+                        if (type === "driver")
+                        {
+                            item.color = data.color;
+                            setup[1].color = data.color;
+                            setup[2].color = data.color;
+                        }
                     }
                 }
             }
