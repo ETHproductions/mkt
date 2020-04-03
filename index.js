@@ -196,47 +196,49 @@ Vue.component('comparison-table', {
       </table>`
 });
 
-function buildDKG(type) {
-    let obj = {
-        type: type,
-        name: "default",
-        color: "red",
-        rarity: 0,
-        skill: "default",
-        level: 0,
-        points: 0,
-        tier: 0,
-        tierboost: "",
-        fulltier: 0,
-        calcprops: { bpb: 0, skillpoints: 0 },
-        displayprops: []
-    };
-    if (type === "driver")
-        obj.calcprops.frenzyinc = 0;
-    if (type === "kart")
-        obj.calcprops.multiplier = 0;
-    if (type === "glider")
-        obj.calcprops.combotime = 0;
-    return obj;
+function buildSetup() {
+    let setup = {};
+    setup.dkg = [];
+    
+    for (let type of ["driver", "kart", "glider"])
+    {
+        let obj = {
+            type: type,
+            name: "default",
+            color: "red",
+            rarity: 0,
+            skill: "default",
+            level: 0,
+            points: 0,
+            tier: 0,
+            tierboost: "",
+            fulltier: 0,
+            calcprops: { bpb: 0, skillpoints: 0 },
+            displayprops: []
+        };
+        if (type === "driver")
+            obj.calcprops.frenzyinc = 0;
+        if (type === "kart")
+            obj.calcprops.multiplier = 0;
+        if (type === "glider")
+            obj.calcprops.combotime = 0;
+        
+        setup[type] = obj;
+        setup.dkg.push(obj);
+    }
+    
+    setup.stats = {};
+    return setup;
 }
 
 var app = new Vue({
     el: '#container',
     data: {
+        course: { tour: -1, cup: -1, index: -1, course: "", variant: "", fullname: "" },
         setups: [
-            { tour: -1, cup: -1, index: -1, course: "", variant: "", fullname: "" },
-            [
-                buildDKG("driver"),
-                buildDKG("kart"),
-                buildDKG("glider")
-            ],
-            [
-                buildDKG("driver"),
-                buildDKG("kart"),
-                buildDKG("glider")
-            ]
+            buildSetup(),
+            buildSetup()
         ],
-        stats: [],
         comparisons: { summary: [], points: [] }
     }
 });
@@ -334,12 +336,13 @@ function loadActionData()
 {
     fetchLocal('data/actions.csv').then(response => response.text()).then(text => {
         let rawdata = text.split("\r\n").map(l => l.split(","));
-        let actiondata = {};
+        let actiondata = { actions: [] };
         
         for (let i = 0; i < rawdata.length; i++)
         {
             let rawaction = rawdata[i];
             let actionname = rawaction.shift();
+            actiondata.actions.push(actionname);
             let actionobj = actiondata[actionname] = {};
             
             let points = +rawaction.shift();
@@ -428,7 +431,7 @@ function loadDKGData()
 
 function cloneSelect(n)
 {
-    $(`.input${ n }`).each((_, el) => el.value = $("#" + el.id.split(n).join(n^1)).val())
+    $(`.input${ n }`).each((_, el) => el.value = $("#" + el.id.replace(n,n^1)).val())
     refreshSetups();
 }
 function setupMenu()
@@ -458,7 +461,7 @@ function setupMenu()
             {
                 for (let i = 25; i >= 0; i--)
                 {
-                    $(`#select-${ side }-${ j }-points-${ rarity }`).append(`<option value="${ i }">${ calcPoints(j, rarity, i) }</option>`);
+                    $(`#select-${ side }-${ j }-points-${ rarity }`).append(`<option value="${ i }">${ calcBasePoints(j, rarity, i) }</option>`);
                 }
             }
         }
@@ -536,7 +539,7 @@ function setupMenu()
     $(".dkg-input select").on("input", refreshSetups);
 }
 
-function calcPoints(type, rarity, index) {
+function calcBasePoints(type, rarity, index) {
     if (type === 'driver') {
         return [,400,450,500][rarity] + [,8,9,12][rarity] * index; 
     }
@@ -547,7 +550,7 @@ function calcPoints(type, rarity, index) {
         return [,200,,250][rarity] + [,4,,6][rarity] * index;
     }
 }
-function uncalcPoints(type, rarity, points) {
+function uncalcBasePoints(type, rarity, points) {
     if (type === 'driver') {
         return (points - [,400,450,500][rarity]) / [,8,9,12][rarity];
     }
@@ -564,8 +567,8 @@ function uncalcPoints(type, rarity, points) {
 function onTourChange(propagate = true)
 {
     let newtourid = +$("#select-tour").val(),
-        course = app.setups[0],
-        newtour = tourdata[newtourid]; 
+        course = app.course,
+        newtour = tourdata[newtourid];
     
     if (course.tour === -1 && newtourid !== -1)
     {
@@ -599,7 +602,7 @@ function onTourChange(propagate = true)
 function onCupChange(propagate = true)
 {
     let newcupid = $("#select-cup").val(),
-        course = app.setups[0],
+        course = app.course,
         newcup = tourdata[course.tour].cups[newcupid];
     
     course.cup = newcupid;
@@ -613,7 +616,7 @@ function onCupChange(propagate = true)
     propagate && onCourseChange();
 }
 function onCourseChange(propagate = true) {
-    let data = app.setups[0];
+    let data = app.course;
     let oldcourse = data.course, oldvariant = data.variant;
     let course, variant;
     
@@ -643,8 +646,8 @@ function onCourseChange(propagate = true) {
     }
     else
     {
-        let tour = app.setups[0].tour,
-            cup = app.setups[0].cup;
+        let tour = data.tour,
+            cup = data.cup;
         data.index = +$("#select-cup-course").val();
         course = maptrack(tourdata[tour].cups[cup].courses[data.index]);
         variant = course.slice(-1);
@@ -660,23 +663,22 @@ function onCourseChange(propagate = true) {
 }
 function refreshSetups()
 {
-    for (let side of [1, 2])
+    let side = 0;
+    for (let setup of app.setups)
     {
-        let setup = app.setups[side];
-        for (let j of [0, 1, 2])
+        side++;
+        setup.stats = { basepoints: 0, bpb: 0 };
+        for (let type of ["driver", "kart", "glider"])
         {
-            let type = ["driver", "kart", "glider"][j];
-            let item = setup[j];
-            let changed = false;
+            let item = setup[type];
             for (let k of ["name", "level", "points"])
             {
                 let val = $(`#select-${ side }-${ type }-${ k === "points" ? k + '-' + item.rarity : k }`).val();
                 if (k === 'points')
-                    val = calcPoints(type, item.rarity, val);
+                    val = calcBasePoints(type, item.rarity, val);
                 
                 if (item[k] !== val)
                 {
-                    changed = true;
                     item[k] = val;
                     let data = window[type + "data"][item[k]];
                     if (k === "name")
@@ -691,170 +693,180 @@ function refreshSetups()
                         if (type === "driver")
                         {
                             item.color = data.color;
-                            setup[1].color = data.color;
-                            setup[2].color = data.color;
+                            setup.kart.color = data.color;
+                            setup.glider.color = data.color;
                         }
                     }
                 }
             }
             let data = window[type + "data"][item.name];
-            if (true) {
-                let course = app.setups[0], tour = tourdata[course.tour];
-                
-                item.tier = item.fulltier = data.tracks_ttier.includes(course.fullname) ? 3 : data.tracks_mtier.includes(course.fullname) ? 2 : 1;
-                
-                item.tierboost = undefined;
-                if ((course.index === 1 && tour.spotlights[0].includes(item.name))
-                 || (course.index === 2 && tour.spotlights[1].includes(item.name)))
-                    item.tierboost = "spotlight",
-                    item.fulltier++;
-                if (tour && tour.cups[course.cup].favored.includes(item.name))
-                    item.tierboost = item.tierboost ? "cup & spotlight" : "cup",
-                    item.fulltier++;
-                item.fulltier = Math.min(item.fulltier, 3);
-                
-                item.calcprops.bpb = Math.round(item.points / 200 * (item.level - 1) * 1000) / 1000;
-                let dp = item.displayprops = [];
+            let course = app.course, tour = tourdata[course.tour];
+
+            item.tier = item.fulltier = data.tracks_ttier.includes(course.fullname) ? 3 : data.tracks_mtier.includes(course.fullname) ? 2 : 1;
+
+            item.tierboost = undefined;
+            if ((course.index === 1 && tour.spotlights[0].includes(item.name))
+             || (course.index === 2 && tour.spotlights[1].includes(item.name)))
+                item.tierboost = "spotlight",
+                item.fulltier++;
+            if (tour && tour.cups[course.cup].favored.includes(item.name))
+                item.tierboost = item.tierboost ? "cup & spotlight" : "cup",
+                item.fulltier++;
+            item.fulltier = Math.min(item.fulltier, 3);
+
+            setup.stats.basepoints = roundDecimals(setup.stats.basepoints + item.points);
+
+            item.calcprops.bpb = roundDecimals(item.points / 200 * (item.level - 1));
+            setup.stats.bpb = roundDecimals(setup.stats.bpb + item.calcprops.bpb);
+            let dp = item.displayprops = [];
+            dp.push({
+                name: "Level",
+                value: String(item.level)
+            });
+            dp.push({
+                name: "Base points",
+                value: String(item.points)
+            });
+
+            if (item.type === 'kart') {
+                item.calcprops.multiplier = roundDecimals((1 + ((item.level >> 1) + item.rarity - 1) / 20) * (item.fulltier + 1) / 2);
                 dp.push({
-                    name: "Level",
-                    value: String(item.level)
-                });
-                dp.push({
-                    name: "Base points",
-                    value: String(item.points)
-                });
-                
-                if (item.type === 'kart') {
-                    item.calcprops.multiplier = Math.round((1 + ((item.level >> 1) + item.rarity - 1) / 20) * (item.fulltier + 1) / 2 * 1000) / 1000;
-                    dp.push({
-                        name: "Points multiplier",
-                        nametitle: "Multiplier applied to the base points of each action",
-                        value: "×" + item.calcprops.multiplier
-                    });
-                }
-                if (item.type === 'glider') {
-                    item.calcprops.combotime = Math.round((1 + ((item.level >> 1) + item.rarity - 1) / 20) * (item.fulltier + 1) / 2 * 1000) / 1000;
-                    dp.push({
-                        name: "Combo time",
-                        value: "×" + item.calcprops.combotime
-                    });
-                    dp.push({
-                        name: "Combo multiplier",
-                        value: "×" + item.fulltier
-                    });
-                }
-                if (item.type === 'driver') {
-                    item.calcprops.frenzyinc = [,[0,2,4,6],[1,3,5,8],[2,4,7,10]][item.rarity][item.level >> 1];
-                    dp.push({
-                        name: "Items",
-                        value: String(item.fulltier)
-                    });
-                    dp.push({
-                        name: "Frenzy increase",
-                        nametitle: "Increase above base frenzy chance",
-                        value: item.fulltier === 3 ? "+" + item.calcprops.frenzyinc + "%" : "N/A",
-                        valuetitle: item.fulltier === 3 ? undefined : "Driver must be top-tier to receive frenzies"
-                    });
-                }
-                else {
-                    let action = Object.keys(actiondata).find(x => actiondata[x].bonusskill === item.skill);
-                    item.calcprops.skillpoints = actiondata[action].points[item.rarity];
-                    dp.push({
-                        name: item.skill + " bonus",
-                        nametitle: ["Coin", "Mushroom"].includes(item.skill) ? "Only applies to " + item.skill + "s used as items, not those gathered from the track" : undefined,
-                        value: "+" + item.calcprops.skillpoints
-                    });
-                }
-                
-                dp.push({
-                    name: "Bonus-points boost",
-                    nametitle: "Bonus points awarded for every action",
-                    value: item.fulltier === 3 ? "+" + item.calcprops.bpb : "none",
-                    valuetitle: item.fulltier === 3 ? item.level === "1" ? "Item must be level 2 or above to receive bonus-points boost" : undefined : "Item must be top-tier to receive bonus-points boost"
+                    name: "Points multiplier",
+                    nametitle: "Multiplier applied to the base points of each action",
+                    value: "×" + item.calcprops.multiplier
                 });
             }
+            if (item.type === 'glider') {
+                item.calcprops.combotime = roundDecimals((1 + ((item.level >> 1) + item.rarity - 1) / 20) * (item.fulltier + 1) / 2);
+                dp.push({
+                    name: "Combo time",
+                    value: "×" + item.calcprops.combotime
+                });
+                dp.push({
+                    name: "Combo multiplier",
+                    value: "×" + item.fulltier
+                });
+            }
+            if (item.type === 'driver') {
+                item.calcprops.frenzyinc = [,[0,2,4,6],[1,3,5,8],[2,4,7,10]][item.rarity][item.level >> 1];
+                dp.push({
+                    name: "Items",
+                    value: String(item.fulltier)
+                });
+                dp.push({
+                    name: "Frenzy increase",
+                    nametitle: "Increase above base frenzy chance",
+                    value: item.fulltier === 3 ? "+" + item.calcprops.frenzyinc + "%" : "N/A",
+                    valuetitle: item.fulltier === 3 ? undefined : "Driver must be top-tier to receive frenzies"
+                });
+            }
+            else {
+                let action = actiondata.actions.find(x => actiondata[x].bonusskill === item.skill);
+                item.calcprops.skillpoints = actiondata[action].points[item.rarity];
+                dp.push({
+                    name: item.skill + " bonus",
+                    nametitle: ["Coin", "Mushroom"].includes(item.skill) ? "Only applies to " + item.skill + "s used as items, not those gathered from the track" : undefined,
+                    value: "+" + item.calcprops.skillpoints
+                });
+            }
+
+            dp.push({
+                name: "Bonus-points boost",
+                nametitle: "Bonus points awarded for every action",
+                value: item.fulltier === 3 ? "+" + item.calcprops.bpb : "none",
+                valuetitle: item.fulltier === 3 ? item.level === "1" ? "Item must be level 2 or above to receive bonus-points boost" : undefined : "Item must be top-tier to receive bonus-points boost"
+            });
         }
     }
     
     encodeLink();
-    
+    calcResults();
+}
+
+function calcResults()
+{
     app.comparisons.summary = [];
     app.stats = [];
-    
-    let basepoints = [];
-    let bpb = [];
-    for (let i = 1; i < app.setups.length; i++) {
-        let basetotal = 0;
-        let bpbtotal = 0;
-        for (let item of app.setups[i]) {
-            basetotal += item.points;
-            if (item.fulltier !== 3) continue;
-            bpbtotal += item.calcprops.bpb;
-        }
-        basetotal = Math.round(basetotal * 1000) / 1000;
-        bpbtotal = Math.round(bpbtotal * 1000) / 1000;
-        basepoints.push(basetotal);
-        bpb.push(bpbtotal);
-        app.stats.push({ basepoints: basetotal, bpb: bpbtotal });
-    }
-    let frenzyinc = app.setups.slice(1).map(setup => setup[0].calcprops.frenzyinc);
-    let kartmulti = app.setups.slice(1).map(setup => setup[1].calcprops.multiplier);
-    let combotime = app.setups.slice(1).map(setup => setup[2].calcprops.combotime);
+    let sm = f => app.setups.map(f);
     
     let table = [
-        { name: "Base points", title: "Points awarded for the chosen driver/kart/glider at the beginning of the race", format: "_", array: basepoints },
-        { name: "Frenzy chance increase", title: "Bonus added to the base chance of rolling a frenzy", format: "+_%", array: frenzyinc },
-        { name: "Action points multiplier", title: "Multiplier applied to each action's base points", format: "×_", array: kartmulti },
-        { name: "Combo time multiplier", title: "Time increase for combos (over base ~1 second)", format: "×_", array: combotime },
-        { name: "Bonus-points boost", title: "Bonus points awarded for every action", format: "+_", array: bpb}
+        { name: "Base points", title: "Points awarded for the chosen driver/kart/glider at the beginning of the race", format: "_", array: sm(x => x.stats.basepoints) },
+        app.setups[0].driver.fulltier * app.setups[1].driver.fulltier === 9
+          ? { name: "Frenzy chance increase", title: "Bonus added to the base chance of rolling a frenzy", format: "+_%", array: sm(x => x.driver.calcprops.frenzyinc) }
+          : { name: "Items per item box", title: "Number of items the driver can hold", format: "_", array: sm(x => x.driver.fulltier) },
+        { name: "Action points multiplier", title: "Multiplier from the kart applied to each action's base points", format: "×_", array: sm(x => x.kart.calcprops.multiplier) },
+        app.setups[0].glider.fulltier === app.setups[1].glider.fulltier
+          ? { name: "Base combo time", title: "The base amount of time after most actions before the combo expires", format: "×_", array: sm(x => x.glider.calcprops.combotime) }
+          : { name: "Combo multiplier", title: "The increase in bonus points for every action in a combo (up to the 16th)", format: "×_", array: sm(x => x.glider.fulltier) },
+        { name: "Bonus-points boost", title: "Bonus points awarded for every action", format: "+_", array: sm(x => x.stats.bpb) }
     ];
     for (let row of table) {
         app.comparisons.summary.push({
             name: row.name,
             nametitle: row.title,
             values: row.array.map(x => {
-                return { value: row.format.replace('_', x), highlight: x === Math.max(...row.array) }
+                return { value: typeof x === "number" ? row.format.replace('_', x) : x, highlight: x === Math.max(...row.array) }
             }),
             display: true
         })
     }
     
     app.comparisons.points = [];
-    let actions = [].concat(...app.setups.slice(1)).map(x => x.type === 'driver' ? [] : Object.keys(actiondata).filter(y => actiondata[y].bonusskill === x.skill));
-    actions = ["Dash Panel", "Jump Boost", "Mini-Turbo", "Super Mini-Turbo", "Ultra Mini-Turbo", "Rocket Start", "Slipstream", "Traffic cone", "Coin", "1st place!"].concat(...actions);
-    for (let action of new Set(actions)) {
-        let points = actiondata[action].points;
-        let compoints = app.setups.slice(1).map((setup, i) => {
-            return Math.ceil(points[0] * setup[1].calcprops.multiplier + app.stats[i].bpb + setup.reduce((p, item) => p + item.calcprops.skillpoints * (actiondata[action].bonusskill == item.skill), 0));
-        });
+    
+    let addMaxRow = function(action, title, actionpoints) {
+        let compoints = app.setups.map(setup => calcActionPoints(setup, actionpoints || action));
         app.comparisons.points.push({
             name: action,
-            nametitle: action === "Item hit" ? "Landing a hit with any item excluding those listed above" : undefined,
+            nametitle: title,
             values: compoints.map(x => {
-                return { value: String(x), highlight: x === Math.max(...compoints)}
+                return { value: String(x), highlight: x === Math.max(...compoints.filter(x => typeof x === "number")) }
             }),
             display: true
         });
-    }
-    let compoints = app.setups.slice(1).map((setup, i) => {
-        return Math.ceil(25 * setup[1].calcprops.multiplier + app.stats[i].bpb);
-    });
-    app.comparisons.points.push({
-        name: "Item hit",
-        nametitle: "Landing a hit with an item other than those already listed",
-        values: compoints.map(x => {
-            return { value: String(x), highlight: x === Math.max(...compoints)}
-        }),
-        display: true
-    });
+    };
+    let actions = [].concat(...app.setups.map(x => x.dkg)).map(x => actiondata.actions.filter(y => actiondata[y].bonusskill === x.skill));
+    actions = ["Dash Panel", "Jump Boost", "Mini-Turbo", "Super Mini-Turbo", "Ultra Mini-Turbo", "Rocket Start", "Slipstream", "Traffic cone", "Coin"].concat(...actions);
+    
+    for (let action of new Set(actions))
+        addMaxRow(action);
+    
+    addMaxRow("Item hit", "Landing a hit with an item other than those already listed", 25);
+    addMaxRow("1st place!", "Finishing the 1st lap (or 1st or 2nd segment) in 1st place", 200);
     app.comparisons.points.push({
         name: "1st place bonus-points boost",
         nametitle: "Points awarded at the end of the race for each action performed",
-        values: bpb.map(x => ({ value: '+' + x, highlight: x === Math.max(...bpb) })),
+        values: sm(x => x.stats.bpb).map(x => ({ value: '+' + x, highlight: x === Math.max(...sm(x => x.stats.bpb)) })),
         display: true
     });
 }
 
+function calcActionPoints(setup, action)
+{
+    let data = actiondata[action];
+    let points = typeof action === "number" ? action : data.points[0];
+    points *= setup.kart.calcprops.multiplier;
+
+    if (data)
+    {
+        if (data.bonusskill && data.points.length === 1)
+            if (setup.driver.skill !== data.bonusskill)
+                return "N/A";
+
+        if (setup.kart.skill === data.bonusskill)
+            points += setup.kart.calcprops.skillpoints;
+        if (setup.glider.skill === data.bonusskill)
+            points += setup.glider.calcprops.skillpoints;
+    }
+
+    points += setup.stats.bpb;
+    
+    return Math.ceil(points);
+}
+function roundDecimals(num, decimals = 3)
+{
+    let mult = 10 ** decimals;
+    return Math.round(num * mult) / mult;
+}
 function to8bHex(value)
 {
     return (value + 256).toString(16).slice(-2);
@@ -862,18 +874,18 @@ function to8bHex(value)
 function encodeLink()
 {
     let query = '?tour=';
-    query += to8bHex(app.setups[0].tour) + to8bHex(app.setups[0].cup * 4 + app.setups[0].index);
+    query += to8bHex(app.course.tour) + to8bHex(app.course.cup * 4 + app.course.index);
     query += '&course='
-    query += app.setups[0].course.match(/[\w']+/g).map(x => x[0]).join("") + app.setups[0].variant;
-    for (i = 1; i < app.setups.length; i++)
+    query += app.course.course.match(/[\w']+/g).map(x => x[0]).join("") + app.course.variant;
+    for (i = 0; i < app.setups.length; i++)
     {
         let setup = app.setups[i];
-        query += '&setup' + i + '=';
+        query += '&setup' + (i + 1) + '=';
         for (let j = 0; j < 3; j++)
         {
-            let item = setup[j];
-            query += to8bHex(window[item.type + 'data'][item.name].id + 256);
-            query += to8bHex(uncalcPoints(item.type, item.rarity, item.points) + item.level * 32);
+            let item = setup.dkg[j];
+            query += to8bHex(window[item.type + 'data'][item.name].id);
+            query += to8bHex(uncalcBasePoints(item.type, item.rarity, item.points) + item.level * 32);
         }
     }
     
