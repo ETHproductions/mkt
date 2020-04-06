@@ -155,7 +155,7 @@ Vue.component('result-box', {
       </div>`
 });
 
-let hiddenComparisons = { summary: 0, points: 1 };
+let hiddenComparisons = { summary: 0, points: 1, scores: 0 };
 Vue.component('show-hide-toggle', {
     props: {
         name: String,
@@ -242,6 +242,7 @@ function buildSetup() {
             color: "red",
             rarity: 0,
             skill: "default",
+            skillpoints: 0,
             level: 0,
             points: 0,
             tier: 0,
@@ -268,12 +269,12 @@ function buildSetup() {
 var app = new Vue({
     el: '#container',
     data: {
-        course: { tour: -1, cup: -1, index: -1, course: "", variant: "", fullname: "" },
+        course: { tour: -1, cup: -1, index: -1, course: "", variant: "", fullname: "", displayname: "" },
         setups: [
             buildSetup(),
             buildSetup()
         ],
-        comparisons: { summary: [], points: [] },
+        comparisons: { summary: [], points: [], scores: [] },
         hiddenComparisons: hiddenComparisons
     }
 });
@@ -665,7 +666,7 @@ function onCourseChange(propagate = true) {
                 if ($("#select-variant").val() == null)
                 {
                     $("#select-variant").val("N");
-                    data.variant = "N";
+                    variant = "N";
                 }
             }
         }
@@ -687,6 +688,7 @@ function onCourseChange(propagate = true) {
     }
     
     data.fullname = course + (/\D$/.test(course) ? " " : "") + variant;
+    data.displayname = data.fullname.replace(/Z$/, "R/T").replace(/N$/, "");
     $("#result-track").html(`<img src="img/courses/${ data.fullname }.png">`);
     
     propagate && refreshSetups();
@@ -726,6 +728,8 @@ function refreshSetups()
                             setup.kart.color = data.color;
                             setup.glider.color = data.color;
                         }
+                        else
+                            item.skillpoints = actiondata[actiondata.actions.find(x => actiondata[x].bonusskill === data.skill)].points[data.rarity];
                     }
                 }
             }
@@ -746,7 +750,7 @@ function refreshSetups()
 
             setup.stats.basepoints = roundDecimals(setup.stats.basepoints + item.points);
 
-            item.calcprops.bpb = roundDecimals(item.points / 200 * (item.level - 1));
+            item.calcprops.bpb = item.fulltier === 3 ? roundDecimals(item.points / 200 * (item.level - 1)) : 0;
             setup.stats.bpb = roundDecimals(setup.stats.bpb + item.calcprops.bpb);
             let dp = item.displayprops = [];
             dp.push({
@@ -873,7 +877,109 @@ function calcResults()
     app.comparisons.points.push({
         name: "1st place bonus-points boost",
         nametitle: "Points awarded at the end of the race for each action performed",
-        values: sm(x => x.stats.bpb).map(x => ({ value: '+' + x, highlight: x === Math.max(...sm(x => x.stats.bpb)) })),
+        values: sm(x => x.stats.bpb).map((x, i, a) => ({ value: '+' + x, highlight: x === Math.max(...a) })),
+        display: true
+    });
+    
+    app.comparisons.scores = [];
+    let course = coursedata[app.course.course][app.course.variant];
+    let baseactioncount = course["Dash Panel"] + course["Jump Boost"] + course["Mini-Turbo"] + course["Slipstream"] + 3 * course["Item Box"];
+    let stats = [];
+    for (let i in app.setups)
+    {
+        let stat = stats[i] = {};
+        let setup = app.setups[i];
+        
+        stat.kartskill = setup.kart.skill;
+        stat.kartskillpoints = setup.kart.skillpoints;
+        stat.kartskillactions = stat.kartskill == "Rocket Start" ? 1 : course[setup.kart.skill];
+        stat.kartpoints = stat.kartskillpoints * stat.kartskillactions;
+        
+        stat.bpb = roundDecimals(setup.stats.bpb);
+        stat.driveractions = (setup.driver.fulltier + (setup.driver.fulltier === 3 ? (10 + setup.driver.calcprops.frenzyinc) / 20 : 0)) * course["Item Box"];
+        stat.totalactions = Math.round(baseactioncount + stat.driveractions);
+        stat.totalbpb = Math.ceil(stat.totalactions * stat.bpb * 2);
+        
+        stat.basepoints = setup.stats.basepoints;
+        
+        stat.baseactionpoints = course["Dash Panel"] * 10 + course["Jump Boost"] * 10 + course["Mini-Turbo"] * 5 + 1 * 30 + course["Slipstream"] * 30 + 3 * course["Item Box"] * 10 + stat.driveractions * 5 + 200;
+        stat.kartmultiplier = setup.kart.calcprops.multiplier;
+        stat.totalactionpoints = Math.ceil(stat.baseactionpoints * stat.kartmultiplier);
+        
+        stat.comborating = roundDecimals(stat.totalactions / (course["Item Box"] + course["Mini-Turbo"]/3));
+        stat.combotime = setup.glider.calcprops.combotime;
+        stat.comboscore = setup.glider.fulltier;
+        stat.combopoints = Math.ceil(Math.min(stat.comborating * stat.combotime * 0.8, 15) * stat.comboscore * (stat.totalactions - 8));
+        
+        stat.totalpoints = stat.basepoints + stat.totalactionpoints + stat.kartpoints + stat.combopoints + stat.totalbpb;
+    }
+
+    app.comparisons.scores.push({
+        name: "Base points",
+        values: stats.map(stat => {
+            return {
+                value: String(stat.basepoints),
+                highlight: stat.basepoints === Math.max(...stats.map(x => x.basepoints))
+            };
+        }),
+        display: true
+    });
+    app.comparisons.scores.push({
+        name: "Action points",
+        values: stats.map(stat => {
+            return {
+                value: String(stat.totalactionpoints),
+                title: `${ stat.kartmultiplier } action points multiplier × ${ stat.baseactionpoints } base action points estimated for a great race on ${ app.course.displayname }`,
+                highlight: stat.totalactionpoints === Math.max(...stats.map(x => x.totalactionpoints))
+            };
+        }),
+        display: true
+    });
+    
+    app.comparisons.scores.push({
+        name: "Combo bonus",
+        values: stats.map(stat => {
+            return {
+                value: String(stat.combopoints),
+                title: `${ roundDecimals(stat.combopoints / (stat.totalactions - 8)) } average combo points × (${ stat.totalactions } - 8) actions estimated for a great race on ${ app.course.displayname }`,
+                highlight: stat.combopoints === Math.max(...stats.map(x => x.combopoints))
+            };
+        }),
+        display: true
+    });
+    
+    app.comparisons.scores.push({
+        name: "Kart skill bonus",
+        values: stats.map(stat => {
+            return {
+                value: String(stat.kartpoints),
+                title: `${ stat.kartskillpoints } bonus points × ${ stat.kartskillactions } ${ stat.kartskill }${ stat.kartskillactions === 1 ? "" : "s" } estimated to be possible on ${ app.course.displayname }`,
+                highlight: stat.kartpoints === Math.max(...stats.map(x => x.kartpoints))
+            };
+        }),
+        display: true
+    });
+    
+    app.comparisons.scores.push({
+        name: "Bonus-points boost",
+        values: stats.map(stat => {
+            return {
+                value: String(stat.totalbpb),
+                title: `2 × ${ stat.bpb } bonus-points boost × ${ stat.totalactions } actions estimated for a great race on ${ app.course.displayname }`,
+                highlight: stat.totalbpb === Math.max(...stats.map(x => x.totalbpb))
+            };
+        }),
+        display: true
+    });
+    
+    app.comparisons.scores.push({
+        name: "Total",
+        values: stats.map(stat => {
+            return {
+                value: String(stat.totalpoints),
+                highlight: stat.totalpoints === Math.max(...stats.map(x => x.totalpoints))
+            };
+        }),
         display: true
     });
 }
