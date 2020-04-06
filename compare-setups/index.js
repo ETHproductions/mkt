@@ -111,19 +111,19 @@ Vue.component('imagebox', {
             let img = this.name.replace(/\?/g, "Q");
             if (img === "Pipe Frame" || img === "Super Glider")
                 img += " " + this.color;
-            return `img/${ this.type }s/${ img }.png`;
+            return `../img/${ this.type }s/${ img }.png`;
         },
         raritytitle: function () {
             return ["default", "Normal", "Super", "High-End"][this.rarity];
         },
         rarityimg: function () {
-            return `img/items/${ this.raritytitle }.png`;
+            return `../img/items/${ this.raritytitle }.png`;
         },
         skilltitle: function () {
             return this.type == 'driver' ? this.skill : this.skill + ' Plus';
         },
         skillimg: function () {
-            return `img/items/${ this.skill }.png`;
+            return `../img/items/${ this.skill }.png`;
         },
     },
     template: `
@@ -288,7 +288,7 @@ function loadCSV(file)
 }
 function loadCourseData()
 {
-    loadCSV('data/courses.csv').then(rawdata => {
+    loadCSV('../data/courses.csv').then(rawdata => {
         let rows = [], trackmap = {}, coursedata = {}, currtrack, currcourse;
         
         for (let j = 0; j < rawdata.length; j++)
@@ -343,7 +343,7 @@ function loadCourseData()
 }
 function loadTourData()
 {
-    loadCSV('data/tours.csv').then(rawdata => {
+    loadCSV('../data/tours.csv').then(rawdata => {
         let tourdata = [];
         
         for (let i = 0; i < rawdata.length; i++)
@@ -371,7 +371,7 @@ function loadTourData()
 }
 function loadActionData()
 {
-    loadCSV('data/actions.csv').then(rawdata => {
+    loadCSV('../data/actions.csv').then(rawdata => {
         let actiondata = { actions: [] };
         
         for (let i = 0; i < rawdata.length; i++)
@@ -400,7 +400,7 @@ function loadActionData()
 }
 function loadItemData()
 {
-    loadCSV('data/items.csv').then(rawdata => {
+    loadCSV('../data/items.csv').then(rawdata => {
         let itemdata = {};
         
         for (let i = 1; i < rawdata.length; i++)
@@ -432,7 +432,7 @@ function loadItemData()
 function loadDKGData()
 {
     let promises = 3;
-    ["driver", "kart", "glider"].forEach(type => loadCSV('data/' + type + 's.csv').then(rawdata =>
+    ["driver", "kart", "glider"].forEach(type => loadCSV('../data/' + type + 's.csv').then(rawdata =>
     {
         let rows = [], data = {map:[]}, curritem;
         
@@ -689,7 +689,7 @@ function onCourseChange(propagate = true) {
     
     data.fullname = course + (/\D$/.test(course) ? " " : "") + variant;
     data.displayname = data.fullname.replace(/Z$/, "R/T").replace(/N$/, "");
-    $("#result-track").html(`<img src="img/courses/${ data.fullname }.png">`);
+    $("#result-track").html(`<img src="../img/courses/${ data.fullname }.png">`);
     
     propagate && refreshSetups();
 }
