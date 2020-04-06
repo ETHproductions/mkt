@@ -169,3 +169,11 @@ span[title] {
 .bold {
   font-weight: 800;
 }
+.show-hide {
+    color: #dbd;
+    text-decoration: underline;
+}
+.show-hide:hover {
+    color: #b9b;
+    cursor: pointer;
+}

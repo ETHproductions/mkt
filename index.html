@@ -47,10 +47,8 @@
 </div>
 
 <div id="comparison">
-  <h3>Summary</h3>
-  <table id="comparison-summary" is=comparison-table :props="comparisons.summary"></table>
-  <h3>Points per action</h3>
-  <table id="comparison-points" is=comparison-table :props="comparisons.points"></table>
+  <comparison-section name="Summary" prop=summary :props="comparisons.summary"></comparison-section>
+  <comparison-section name="Points per action" prop=points :props="comparisons.points"></comparison-section>
 </div>
 
 </div> <!-- end container -->

@@ -155,6 +155,19 @@ Vue.component('result-box', {
       </div>`
 });
 
+let hiddenComparisons = { summary: 0, points: 1 };
+Vue.component('show-hide-toggle', {
+    props: {
+        name: String,
+        collapsed: Boolean
+    },
+    computed: {
+        hiddenComparisons: function () {
+            return hiddenComparisons;
+        }
+    },
+    template: `<span class="show-hide" :id="'show-hide-' + name" v-on:click="hiddenComparisons[name]^=1">{{ hiddenComparisons[name] ? 'Show' : 'Hide' }}</span>`
+});
 Vue.component('comparison-prop-name', {
     props: {
         name: String,
@@ -194,6 +207,27 @@ Vue.component('comparison-table', {
         </tr>
         <tr is=comparison-prop v-for="row in props" :key="row.name" v-if="row.display" v-bind="row"></tr>
       </table>`
+});
+Vue.component('comparison-section', {
+    props: {
+        name: String,
+        prop: String,
+        props: Array,
+        collapsed: Boolean
+    },
+    created: function () {
+        this.collapsed && $(this.prop).hide();
+    },
+    computed: {
+        show: function () {
+            return !hiddenComparisons[this.prop];
+        }
+    },
+    template: `
+      <div>
+        <h3>{{ name }} (<show-hide-toggle :name="prop" :collapsed=collapsed></show-hide-toggle>)</h3>
+        <table v-if="show" :id="'comparison-' + prop" is="comparison-table" :props="props"></table>
+      </div>`
 });
 
 function buildSetup() {
@@ -239,7 +273,8 @@ var app = new Vue({
             buildSetup(),
             buildSetup()
         ],
-        comparisons: { summary: [], points: [] }
+        comparisons: { summary: [], points: [] },
+        hiddenComparisons: hiddenComparisons
     }
 });
 
