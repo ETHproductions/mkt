@@ -52,8 +52,11 @@ select.number {
   padding: 0 10px 10px 10px;
   background-color: #aa0;
 }
+#track select {
+  width: 255px;
+}
 #select-variant {
-    width: 60px;
+  width: 60px !important;
 }
 
 .result {
@@ -140,14 +143,14 @@ span[title] {
   }
 }
 .result .td-l {
-    width: 100%;
+  width: 100%;
 }
 .result .td-r {
-    text-align: right;
-    font-weight: bold;
+  text-align: right;
+  font-weight: bold;
 }
 #result-track img {
-    height: 85px;
+  height: 85px;
 }
 
 #comparison {
@@ -170,10 +173,10 @@ span[title] {
   font-weight: 800;
 }
 .show-hide {
-    color: #dbd;
-    text-decoration: underline;
+  color: #dbd;
+  text-decoration: underline;
 }
 .show-hide:hover {
-    color: #b9b;
-    cursor: pointer;
+  color: #b9b;
+  cursor: pointer;
 }

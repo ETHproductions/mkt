@@ -279,22 +279,15 @@ var app = new Vue({
 });
 
 
-function fetchLocal(url)
+function loadCSV(file)
 {
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.onload = function()
-        {
-            resolve({text: () => new Promise((resolve, reject) => resolve(xhr.responseText))});
-        };
-        xhr.open('GET', url);
-        xhr.send();
-    });
+    return fetch(file)
+        .then(response => response.text())
+        .then(text => text.split("\r\n").map(l => l.split(",")));
 }
 function loadCourseData()
 {
-    fetchLocal('data/courses.csv').then(response => response.text()).then(text => {
-        let rawdata = text.split("\r\n").map(l => l.split(","));
+    loadCSV('data/courses.csv').then(rawdata => {
         let rows = [], trackmap = {}, coursedata = {}, currtrack, currcourse;
         
         for (let j = 0; j < rawdata.length; j++)
@@ -340,8 +333,7 @@ function loadCourseData()
 }
 function loadTourData()
 {
-    fetchLocal('data/tours.csv').then(response => response.text()).then(text => {
-        let rawdata = text.split("\r\n").map(l => l.split(","));
+    loadCSV('data/tours.csv').then(rawdata => {
         let tourdata = [];
         
         for (let i = 0; i < rawdata.length; i++)
@@ -369,8 +361,7 @@ function loadTourData()
 }
 function loadActionData()
 {
-    fetchLocal('data/actions.csv').then(response => response.text()).then(text => {
-        let rawdata = text.split("\r\n").map(l => l.split(","));
+    loadCSV('data/actions.csv').then(rawdata => {
         let actiondata = { actions: [] };
         
         for (let i = 0; i < rawdata.length; i++)
@@ -399,8 +390,7 @@ function loadActionData()
 }
 function loadItemData()
 {
-    fetchLocal('data/items.csv').then(response => response.text()).then(text => {
-        let rawdata = text.split("\r\n").map(l => l.split(","));
+    loadCSV('data/items.csv').then(rawdata => {
         let itemdata = {};
         
         for (let i = 1; i < rawdata.length; i++)
@@ -432,9 +422,8 @@ function loadItemData()
 function loadDKGData()
 {
     let promises = 3;
-    ["driver", "kart", "glider"].forEach(type => fetchLocal('data/' + type + 's.csv').then(res => res.text()).then(text =>
+    ["driver", "kart", "glider"].forEach(type => loadCSV('data/' + type + 's.csv').then(rawdata =>
     {
-        let rawdata = text.split("\r\n").map(l => l.split(","));
         let rows = [], data = {map:[]}, curritem;
         
         for (let i = 0; i < rawdata.length; i++)
@@ -525,11 +514,8 @@ function setupMenu()
                 let cup = value >> 2, index = value & 3;
                 if (cup >= tourdata[tourid].cups.length) cup = 0;
                 if (index === 3) index = 0;
-
-                $('#select-cup').val(cup);
-                onCupChange(false);
                 
-                $('#select-cup-course').val(index);
+                $('#select-cup-course').val(cup * 4 + index);
                 onCourseChange(false);
             }
                 
@@ -627,28 +613,19 @@ function onTourChange(propagate = true)
         course.tour = newtourid;
         course.cup = 0;
         $("#select-cup").empty();
+        $("#select-cup-course").empty();
         for (let i in newtour.cups)
         {
-            $("#select-cup").append(`<option value="${ i }">${ newtour.cups[i].name }</option>`);
+            let newcup = newtour.cups[i];
+            $("#select-cup").append(`<option value="${ i }">${ newcup.name }</option>`);
+            
+            for (let j in newcup.courses)
+            {
+                $("#select-cup-course").append(`<option value="${ i*4 + +j }">${ newcup.name + ' — ' + maptrack(newcup.courses[j], true) }</option>`);
+            }
         }
-        propagate && onCupChange();
+        propagate && onCourseChange();
     }
-}
-function onCupChange(propagate = true)
-{
-    let newcupid = $("#select-cup").val(),
-        course = app.course,
-        newcup = tourdata[course.tour].cups[newcupid];
-    
-    course.cup = newcupid;
-    course.index = 0;
-    course.fullname = maptrack(newcup.courses[0]);
-    $("#select-cup-course").empty();
-    for (let i in newcup.courses)
-    {
-        $("#select-cup-course").append(`<option value="${ i }">${ maptrack(newcup.courses[i], true) }</option>`);
-    }
-    propagate && onCourseChange();
 }
 function onCourseChange(propagate = true) {
     let data = app.course;
@@ -682,8 +659,11 @@ function onCourseChange(propagate = true) {
     else
     {
         let tour = data.tour,
-            cup = data.cup;
-        data.index = +$("#select-cup-course").val();
+            index = +$("#select-cup-course").val(),
+            cup = index >> 2;
+        data.index = index %= 4;
+        data.cup = cup;
+        
         course = maptrack(tourdata[tour].cups[cup].courses[data.index]);
         variant = course.slice(-1);
         course = course.slice(0, -1).trim();
