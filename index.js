@@ -296,15 +296,19 @@ function loadCourseData()
         }
         for (let i = 1; i < rawdata[0].length; i++)
         {
-            if (rawdata[0][i])
+            let coursename = rawdata[0][i],
+                variant = rawdata[1][i];
+            if (coursename)
             {
-                currtrack = coursedata[rawdata[0][i]] = {};
-                let trackkey = rawdata[0][i].match(/[\w']+/g).map(x => x[0]).join("");
-                trackmap[trackkey] = rawdata[0][i];
+                currtrack = coursedata[coursename] = {};
+                let trackkey = coursename.match(/[\w']+/g).map(x => x[0]).join("");
+                trackmap[trackkey] = coursename;
             }
-            if (rawdata[1][i])
+            if (variant)
             {
-                currcourse = currtrack[rawdata[1][i]] = {};
+                currcourse = currtrack[variant] = {};
+                currcourse.dkg_ttier = { drivers: [], karts: [], gliders: [] };
+                currcourse.dkg_mtier = { drivers: [], karts: [], gliders: [] };
                 for (let j = 2; j < rows.length; j++)
                 {
                     currcourse[rows[j]] = +rawdata[j][i];
@@ -313,7 +317,7 @@ function loadCourseData()
         }
         
         console.log("tracks:", window.coursedata = coursedata);
-        window.maptrack = function maptrack(track, display = false)
+        window.maptrack = function maptrack(track, format = "")
         {
             track = track.replace(/\+$/, "");
             let variant = track.slice(-1);
@@ -323,9 +327,14 @@ function loadCourseData()
                 variant = "N";
             
             track = trackmap[track] || "Bowser's Castle 1";
-            if (/\D$/.test(track) && !(variant === "N" && display))
+            if (format === "object")
+                return { course: track, variant: variant };
+            if (format === "data")
+                return coursedata[track][variant];
+            
+            if (/\D$/.test(track) && !(variant === "N" && format === "display"))
                 track += " ";
-            track += display ? variant === "N" ? "" : variant === "Z" ? "R/T" : variant : variant;
+            track += format === "display" ? variant === "N" ? "" : variant === "Z" ? "R/T" : variant : variant;
             return track;
         };
         loadTourData();
@@ -429,7 +438,8 @@ function loadDKGData()
         for (let i = 0; i < rawdata.length; i++)
         {
             let rawdkg = rawdata[i];
-            curritem = data[rawdkg[1]] = {};
+            let name = rawdkg[1];
+            curritem = data[name] = {};
             curritem.id = +rawdkg.shift();
             data.map[curritem.id] = rawdkg.shift();
             curritem.skill = rawdkg.shift();
@@ -440,10 +450,17 @@ function loadDKGData()
             curritem.tracks_ttier = [], curritem.tracks_mtier = [];
             rawdkg.forEach(course =>
             {
+                let courseitem = maptrack(course, "data");
                 if (course.slice(-1) == "+")
+                {
                     curritem.tracks_ttier.push(maptrack(course));
+                    courseitem.dkg_ttier[type + "s"].push(name);
+                }
                 else
+                {
                     curritem.tracks_mtier.push(maptrack(course));
+                    courseitem.dkg_mtier[type + "s"].push(name);
+                }
             })
         }
         
@@ -612,16 +629,14 @@ function onTourChange(propagate = true)
     {
         course.tour = newtourid;
         course.cup = 0;
-        $("#select-cup").empty();
         $("#select-cup-course").empty();
         for (let i in newtour.cups)
         {
             let newcup = newtour.cups[i];
-            $("#select-cup").append(`<option value="${ i }">${ newcup.name }</option>`);
             
             for (let j in newcup.courses)
             {
-                $("#select-cup-course").append(`<option value="${ i*4 + +j }">${ newcup.name + ' — ' + maptrack(newcup.courses[j], true) }</option>`);
+                $("#select-cup-course").append(`<option value="${ i*4 + +j }">${ newcup.name + ' — ' + maptrack(newcup.courses[j], "display") }</option>`);
             }
         }
         propagate && onCourseChange();
@@ -664,9 +679,9 @@ function onCourseChange(propagate = true) {
         data.index = index %= 4;
         data.cup = cup;
         
-        course = maptrack(tourdata[tour].cups[cup].courses[data.index]);
-        variant = course.slice(-1);
-        course = course.slice(0, -1).trim();
+        course = maptrack(tourdata[tour].cups[cup].courses[data.index], "object");
+        variant = course.variant;
+        course = course.course;
         data.course = course;
         data.variant = variant;
     }
@@ -839,11 +854,19 @@ function calcResults()
             display: true
         });
     };
-    let actions = [].concat(...app.setups.map(x => x.dkg)).map(x => actiondata.actions.filter(y => actiondata[y].bonusskill === x.skill));
-    actions = ["Dash Panel", "Jump Boost", "Mini-Turbo", "Super Mini-Turbo", "Ultra Mini-Turbo", "Rocket Start", "Slipstream", "Traffic cone", "Coin"].concat(...actions);
+    
+    let actions = [];
+    for (let j of ["glider", "driver"])
+        for (let x of app.setups)
+            actions.push(...actiondata.actions.filter(y => actiondata[y].bonusskill === x[j].skill));
+
+    actions = ["Dash Panel", "Jump Boost", "Mini-Turbo", "Super Mini-Turbo", "Ultra Mini-Turbo", "Rocket Start", "Slipstream", "Traffic cone", "Coin (action)"].concat(...actions);
     
     for (let action of new Set(actions))
-        addMaxRow(action);
+        addMaxRow(action, 
+                 action === "Coin (action)" ? "Picking up a coin from the track" :
+                 action === "Coin" ? "Occurs twice when a coin item is rolled" :
+                 action === "Mushroom" ? "Using a Mushroom obtained from an item box" : undefined);
     
     addMaxRow("Item hit", "Landing a hit with an item other than those already listed", 25);
     addMaxRow("1st place!", "Finishing the 1st lap (or 1st or 2nd segment) in 1st place", 200);
