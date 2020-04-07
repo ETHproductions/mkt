@@ -680,16 +680,14 @@ function onCourseChange(propagate = true) {
         data.index = index %= 4;
         data.cup = cup;
         
-        course = maptrack(tourdata[tour].cups[cup].courses[data.index], "object");
-        variant = course.variant;
-        course = course.course;
-        data.course = course;
-        data.variant = variant;
+        let newcourse = maptrack(tourdata[tour].cups[cup].courses[data.index], "object");
+        data.course = course = newcourse.course;
+        data.variant = variant = newcourse.variant;
     }
     
     data.fullname = course + (/\D$/.test(course) ? " " : "") + variant;
     data.displayname = data.fullname.replace(/Z$/, "R/T").replace(/N$/, "");
-    $("#result-track").html(`<img src="../img/courses/${ data.fullname }.png">`);
+    $("#result-track").html(`<img src="../img/courses/${ data.fullname }.png" title="${ data.displayname }">`);
     
     propagate && refreshSetups();
 }
@@ -953,7 +951,7 @@ function calcResults()
         values: stats.map(stat => {
             return {
                 value: String(stat.kartpoints),
-                title: `${ stat.kartskillpoints } bonus points × ${ stat.kartskillactions } ${ stat.kartskill }${ stat.kartskillactions === 1 ? "" : "s" } estimated to be possible on ${ app.course.displayname }`,
+                title: `${ stat.kartskillpoints } bonus points × ${ stat.kartskillactions } ${ stat.kartskill }${ stat.kartskillactions === 1 ? "" : "s" } estimated to be feasible on ${ app.course.displayname }`,
                 highlight: stat.kartpoints === Math.max(...stats.map(x => x.kartpoints))
             };
         }),

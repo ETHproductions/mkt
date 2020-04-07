@@ -1,0 +1,29 @@
+body {
+  color: white;
+  text-align: center;
+  background-color: #123;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+}
+#container {
+  max-width: 900px;
+  margin: auto;
+}
+
+.hidden {
+  display: none;
+}
+
+span[title] {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+.bold {
+  font-weight: 800;
+}
+a {
+  color: #dbd;
+}
+a:hover {
+  color: #b9b;
+}
