@@ -35,6 +35,7 @@
     </select>
   </div>
   <div id="result-track"></div>
+  Player level: <input id="select-player-level" type=number value=50 min=1 max=99 step=1 onchange="app.level=this.value=Math.min(99,Math.max(1,Math.floor(this.value)));refreshSetups()">
 </div>
 
 </div>

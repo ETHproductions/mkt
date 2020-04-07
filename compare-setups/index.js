@@ -274,6 +274,7 @@ var app = new Vue({
             buildSetup(),
             buildSetup()
         ],
+        level: 50,
         comparisons: { summary: [], points: [], scores: [] },
         hiddenComparisons: hiddenComparisons
     }
@@ -543,6 +544,11 @@ function setupMenu()
             let track = maptrack(value);
             $('#select-course').val(track.slice(0, -1).trim());
             $('#select-variant').val(track.slice(-1));
+        }
+        else if (name === 'level')
+        {
+            app.level = value = Math.min(99, Math.max(1, Math.floor(value) || 50));
+            $('#select-player-level').val(value);
         }
         else if (name.slice(0, 5) === 'setup')
         {
@@ -909,7 +915,13 @@ function calcResults()
         stat.comboscore = setup.glider.fulltier;
         stat.combopoints = Math.ceil(Math.min(stat.comborating * stat.combotime * 0.8, 15) * stat.comboscore * (stat.totalactions - 8));
         
-        stat.totalpoints = stat.basepoints + stat.totalactionpoints + stat.kartpoints + stat.combopoints + stat.totalbpb;
+        stat.level = app.level;
+        stat.positionpoints =
+            stat.level <= 10 ? 2350 + stat.level * 50 :
+            stat.level <= 20 ? 2460 + stat.level * 40 : 
+            stat.level <= 30 ? 2670 + stat.level * 30 :
+            2980 + (stat.level + (stat.level > 42)) * 20;
+        stat.totalpoints = stat.basepoints + stat.totalactionpoints + stat.kartpoints + stat.combopoints + stat.totalbpb + stat.positionpoints;
     }
 
     app.comparisons.scores.push({
@@ -922,6 +934,19 @@ function calcResults()
         }),
         display: true
     });
+    
+    app.comparisons.scores.push({
+        name: "Position points",
+        values: stats.map(stat => {
+            return {
+                value: String(stat.positionpoints),
+                title: "1st place position points for a player level of " + app.level,
+                highlight: true
+            };
+        }),
+        display: true
+    });
+    
     app.comparisons.scores.push({
         name: "Action points",
         values: stats.map(stat => {
@@ -971,7 +996,8 @@ function calcResults()
     });
     
     app.comparisons.scores.push({
-        name: "Total",
+        name: "Total estimated score",
+        nametitle: "Estimated total for a great race with each setup",
         values: stats.map(stat => {
             return {
                 value: String(stat.totalpoints),
@@ -1019,6 +1045,7 @@ function encodeLink()
     query += to8bHex(app.course.tour) + to8bHex(app.course.cup * 4 + app.course.index);
     query += '&course='
     query += app.course.course.match(/[\w']+/g).map(x => x[0]).join("") + app.course.variant;
+    query += '&level=' + app.level;
     for (i = 0; i < app.setups.length; i++)
     {
         let setup = app.setups[i];
