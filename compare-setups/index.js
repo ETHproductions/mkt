@@ -285,7 +285,7 @@ function loadCSV(file)
 {
     return fetch(file)
         .then(response => response.text())
-        .then(text => text.split("\r\n").map(l => l.split(",")));
+        .then(text => text.split(/\r?\n/).map(l => l.split(",")));
 }
 function loadCourseData()
 {
