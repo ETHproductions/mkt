@@ -355,7 +355,7 @@ function loadTourData()
             tour.name = rawtour.shift();
             tour.date = new Date(rawtour.shift() + "T06:00:00Z");
             
-            tour.spotlights = [rawtour.splice(0, 3), rawtour.splice(0, 3)];
+            tour.spotlights = rawtour.splice(0, 2).map(x => x.split("|"));
             tour.cups = [];
             while (rawtour.length) {
                 let cup = {};

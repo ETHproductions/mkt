@@ -10,6 +10,13 @@ body {
   margin: auto;
 }
 
+.notification {
+    background: #58d;
+    border: solid 2px #35a;
+    padding: 10px;
+    border-radius: 10px;
+}
+
 .hidden {
   display: none;
 }
