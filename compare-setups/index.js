@@ -355,7 +355,7 @@ function loadTourData()
             tour.name = rawtour.shift();
             tour.date = new Date(rawtour.shift() + "T06:00:00Z");
             
-            tour.spotlights = rawtour.splice(0, 2).map(x => x.split("|"));
+            tour.spotlights = rawtour.splice(0, 3).map(x => x.split("|"));
             tour.cups = [];
             while (rawtour.length) {
                 let cup = {};
@@ -446,8 +446,7 @@ function loadDKGData()
             data.map[curritem.id] = rawdkg.shift();
             curritem.skill = rawdkg.shift();
             curritem.rarity = +rawdkg.shift();
-            if (type === "driver")
-                curritem.color = rawdkg.shift();
+            curritem.color = rawdkg.shift();
             
             curritem.tracks_ttier = [], curritem.tracks_mtier = [];
             rawdkg.forEach(course =>
@@ -743,9 +742,8 @@ function refreshSetups()
             item.tier = item.fulltier = data.tracks_ttier.includes(course.fullname) ? 3 : data.tracks_mtier.includes(course.fullname) ? 2 : 1;
 
             item.tierboost = undefined;
-            if ((course.index === 1 && tour.spotlights[0].includes(item.name))
-             || (course.index === 2 && tour.spotlights[1].includes(item.name)))
-                item.tierboost = "spotlight",
+            if (tour && tour.spotlights[course.index].includes(item.name))
+                item.tierboost = course.index === 0 ? "special" : "spotlight",
                 item.fulltier++;
             if (tour && tour.cups[course.cup].favored.includes(item.name))
                 item.tierboost = item.tierboost ? "cup & spotlight" : "cup",
