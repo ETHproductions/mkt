@@ -70,7 +70,7 @@ let imgs = document.images, remaining = imgs.length;
 function imageLoaded() {
     remaining -= 1;
     if (remaining === 0)
-        finishedLoading();
+        loadData().then(finishedLoading);
 }
 
 function finishedLoading() {
