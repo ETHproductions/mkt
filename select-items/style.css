@@ -4,4 +4,10 @@ img {
 
 canvas.card {
     width: 108px;
+    margin: 6px;
+}
+
+.dkg-section {
+    width: 480px;
+    text-align: left;
 }

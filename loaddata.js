@@ -123,12 +123,15 @@ function loadActionData()
 function loadItemData()
 {
     return loadCSV('../data/items.csv').then(rawdata => {
-        let itemdata = {};
+        let itemdata = { map: [] };
         
         for (let i = 1; i < rawdata.length; i++)
         {
             let rawitem = rawdata[i];
-            let itemobj = itemdata[rawitem.shift()] = {};
+            let id = +rawitem.shift();
+            let name = rawitem.shift();
+            let itemobj = itemdata[name] = { id, name };
+            itemdata.map[id] = name;
             itemobj.avpos = +rawitem.shift();
             
             let actions = rawitem.shift().split("|");
@@ -166,7 +169,7 @@ function loadDKGData()
                 curritem = data[name] = {};
                 curritem.id = +rawdkg.shift();
                 data.map[curritem.id] = rawdkg.shift();
-                curritem.skill = rawdkg.shift();
+                curritem.skill = +rawdkg.shift();
                 curritem.rarity = +rawdkg.shift();
                 curritem.color = rawdkg.shift();
 
