@@ -1,4 +1,4 @@
-img {
+.hidden {
     display: none;
 }
 
@@ -10,4 +10,25 @@ canvas.card {
 .dkg-section {
     width: 480px;
     text-align: left;
+}
+
+.nav {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0px;
+}
+.nav-item {
+    display: list-item;
+    padding: 8px 8px 0px;
+    border: 1px solid transparent;
+    border-radius: 8px 8px 0px 0px;
+    border-color: #978;
+    margin-right: -1px;
+}
+.nav-item.active {
+    border-color: #dbc #dbc #fff0;
+}
+.nav-item img {
+    width: 48px;
 }

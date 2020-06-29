@@ -65,6 +65,8 @@ let DKGCard = Vue.component('dkg-card', {
                 index += 20;
             
             let ctx = this.$el.getContext("2d");
+            ctx.clearRect(0, 0, 216, 280);
+            
             ctx.drawImage(document.getElementById("cards-" + this.type), 216 * (index % 10), 280 * (index / 10 | 0), 216, 280, 0, 0, 216, 280);
 
             if (this.level === 0)
@@ -83,6 +85,15 @@ let DKGCard = Vue.component('dkg-card', {
     template: `<canvas class="card" :id='"canvas-" + type + "-" + id' width=216 height=280></canvas>`
 });
 
+Vue.component('section-drivers', {
+    template: `<dkg-section id="section-driver" type="driver"></dkg-section>`
+})
+Vue.component('section-karts', {
+    template: `<dkg-section type="kart"></dkg-section>`
+})
+Vue.component('section-gliders', {
+    template: `<dkg-section type="glider"></dkg-section>`
+})
 Vue.component('dkg-section', {
     props: {
         type: String
@@ -105,8 +116,21 @@ Vue.component('dkg-section', {
             children.push(elem)
             console.log(elem)
         }
-        return createElement('div', { attrs: { id: 'section-' + this.type + 's', class: 'dkg-section' }}, children)
+        return createElement('div', { attrs: { id: 'section-' + this.type, class: 'dkg-section' }}, children)
     }
+})
+
+Vue.component('nav-item', {
+    props: {
+        tab: String,
+        active: Boolean
+    },
+    template: `
+    <li :class="'nav-item' + (active ? ' active' : '')">
+        <a :href="'#' + tab" v-on:click="$emit('change-tab')">
+            <img :src="'../img/items/' + tab + '.png'">
+        </a>
+    </li>`
 })
 
 function drawChar(ctx, font, size, char, x, y) {
@@ -144,7 +168,13 @@ function finishedLoading() {
     let app = new Vue({
         el: '#container',
         data: {
+            activeTab: 'drivers',
             inventory: { drivers: [], karts: [], gliders: [] }
+        },
+        computed: {
+            currentTabComponent: function() {
+                return 'section-' + this.activeTab;
+            }
         }
     });
 }

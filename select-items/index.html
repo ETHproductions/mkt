@@ -7,18 +7,21 @@
 
 <body>
     
-<img id="font-numbercolor" src="../img/fonts/numbercolor.png">
-<img id="font-numberrodinlevel" src="../img/fonts/numberrodinlevel.png">
-<img id="cards-driver" src="../img/cards/drivers.png">
-<img id="cards-kart" src="../img/cards/karts.png">
-<img id="cards-glider" src="../img/cards/gliders.png">
-<img id="cards-items" src="../img/items/all.png">
+<img class="hidden" id="font-numbercolor" src="../img/fonts/numbercolor.png">
+<img class="hidden" id="font-numberrodinlevel" src="../img/fonts/numberrodinlevel.png">
+<img class="hidden" id="cards-driver" src="../img/cards/drivers.png">
+<img class="hidden" class="hidden" class="hidden" id="cards-kart" src="../img/cards/karts.png">
+<img class="hidden" class="hidden" id="cards-glider" src="../img/cards/gliders.png">
+<img class="hidden" id="cards-items" src="../img/items/all.png">
 
 <div id="container">
 
-    <dkg-section type=driver></dkg-section>
-    <dkg-section type=kart></dkg-section>
-    <dkg-section type=glider></dkg-section>
+    <ul class="nav">
+        <li is="nav-item" v-for="tab in ['drivers','karts','gliders']" :key="tab" :tab="tab" :active="tab == activeTab" v-on:change-tab="activeTab = tab"></li>
+    </ul>
+    <keep-alive>
+        <component :is="currentTabComponent"></component>
+    </keep-alive>
 
 </div> <!-- end container -->
 
