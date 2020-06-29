@@ -104,7 +104,7 @@ Vue.component('imagebox', {
         name: String,
         color: String,
         rarity: Number,
-        skill: String
+        skill: Number
     },
     computed: {
         mainimg: function () {
@@ -119,11 +119,14 @@ Vue.component('imagebox', {
         rarityimg: function () {
             return `../img/items/${ this.raritytitle }.png`;
         },
+        skillname: function () {
+            return 'itemdata' in window ? itemdata.map[this.skill] : "default";
+        },
         skilltitle: function () {
-            return this.type == 'driver' ? this.skill : this.skill + ' Plus';
+            return this.type == 'driver' ? this.skillname : this.skillname + ' Plus';
         },
         skillimg: function () {
-            return `../img/items/${ this.skill }.png`;
+            return `../img/items/${ this.skillname }.png`;
         },
     },
     template: `
@@ -241,7 +244,7 @@ function buildSetup() {
             name: "default",
             color: "red",
             rarity: 0,
-            skill: "default",
+            skill: 0,
             skillpoints: 0,
             level: 0,
             points: 0,
@@ -266,19 +269,7 @@ function buildSetup() {
     return setup;
 }
 
-var app = new Vue({
-    el: '#container',
-    data: {
-        course: { tour: -1, cup: -1, index: -1, course: "", variant: "", fullname: "", displayname: "" },
-        setups: [
-            buildSetup(),
-            buildSetup()
-        ],
-        level: 50,
-        comparisons: { summary: [], points: [], scores: [] },
-        hiddenComparisons: hiddenComparisons
-    }
-});
+var app;
 
 loadData().then(setupMenu);
 
@@ -290,6 +281,21 @@ function cloneSelect(n)
 function setupMenu()
 {
     console.log(`Data loaded in ${ new Date - startTime }ms`);
+    
+    app = new Vue({
+        el: '#container',
+        data: {
+            course: { tour: -1, cup: -1, index: -1, course: "", variant: "", fullname: "", displayname: "" },
+            setups: [
+                buildSetup(),
+                buildSetup()
+            ],
+            level: 50,
+            comparisons: { summary: [], points: [], scores: [] },
+            hiddenComparisons: hiddenComparisons
+        }
+    });
+
     
     for (let i = tourdata.length; i-- > 0; )
     {
@@ -543,7 +549,7 @@ function refreshSetups()
                             setup.glider.color = data.color;
                         }
                         else
-                            item.skillpoints = actiondata[actiondata.actions.find(x => actiondata[x].bonusskill === data.skill)].points[data.rarity];
+                            item.skillpoints = actiondata[actiondata.actions.find(x => actiondata[x].bonusskill === data.skillname)].points[data.rarity];
                     }
                 }
             }
@@ -608,7 +614,7 @@ function refreshSetups()
                 });
             }
             else {
-                let action = actiondata.actions.find(x => actiondata[x].bonusskill === item.skill);
+                let action = actiondata.actions.find(x => actiondata[x].bonusskill === item.skillname);
                 item.calcprops.skillpoints = actiondata[action].points[item.rarity];
                 dp.push({
                     name: item.skill + " bonus",
