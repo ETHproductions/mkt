@@ -2,14 +2,25 @@
     display: none;
 }
 
-canvas.card {
+#container {
+    width: 100%;
+    max-width: 1080px;
+    font-size: 20px;
+}
+
+.dkg-section canvas.card {
     width: 108px;
-    margin: 6px;
+    margin: 4px 6px;
 }
 
 .dkg-section {
     width: 480px;
+    margin-top: -1px;
+    padding: 10px;
+    border: 1px solid #bcd;
+    border-radius: 0px 8px 8px;
     text-align: left;
+    z-index: 1000;
 }
 
 .nav {
@@ -17,18 +28,109 @@ canvas.card {
     display: flex;
     flex-wrap: wrap;
     padding: 0px;
+    margin-bottom: 0px;
 }
 .nav-item {
     display: list-item;
     padding: 8px 8px 0px;
     border: 1px solid transparent;
     border-radius: 8px 8px 0px 0px;
-    border-color: #978;
+    border-color: #789 #789 transparent;
     margin-right: -1px;
+    z-index: 0;
+    filter: grayscale(50%);
 }
 .nav-item.active {
-    border-color: #dbc #dbc #fff0;
+    border-color: #bcd #bcd #123;
+    filter: none;
+    z-index: 2000;
+}
+.nav-item:hover:not(.active) {
+    border-color: #bcd #bcd transparent;
+    filter: none;
 }
 .nav-item img {
     width: 48px;
+}
+
+#card-editor {
+    width: 500px;
+    padding: 15px 20px;
+    border: 1px solid #bcd;
+    border-radius: 8px;
+    position: fixed;
+    top: 75px;
+    right: calc(50vw - 540px);
+    text-align: left;
+    z-index: 5000;
+}
+@media only screen and (max-width: 1099px) {
+    #card-editor {
+        right: 0;
+        width: calc(100% - 50px);
+        max-width: 520px;
+        background-color: #000c;
+        border-radius: 8px 0px 0px 8px;
+        border-right: none;
+    }
+}
+#card-editor-exit {
+    position: absolute;
+    top: 0px;
+    right: 12px;
+    padding-left: 12px;
+    font-size: 40px;
+}
+#card-editor-exit:hover {
+    cursor: pointer;
+}
+#card-editor-options {
+    margin-left: 12px;
+    margin-bottom: 22px;
+    margin-top: 8px;
+    width: 260px;
+    height: 100%;
+    vertical-align: bottom;
+    display: inline-block;
+    line-height: 42px;
+}
+
+.hide-small { display: inline; }
+.hide-large { display: none; }
+
+select {
+    min-width: 64px;
+    font-size: 20px;
+}
+input[type=checkbox] {
+    transform: scale(2);
+    margin-right: 12px;
+}
+
+@media only screen and (max-width: 599px) {
+    .dkg-section {
+        width: calc(100% - 20px);
+        padding: 1.6%;
+    }
+    .dkg-section canvas.card {
+        width: 23%;
+        margin: 0.4vw 1%;
+    }
+    #card-editor {
+        text-align: center;
+        max-width: 100%;
+        width: calc(100% - 40px);
+        right: 0;
+        border-radius: 0;
+        border-width: 1px 0px;
+        margin: 0;
+    }
+    #card-editor-options {
+        display: block;
+        width: 100%;
+        margin: auto;
+        line-height: 1.5em;
+    }
+    .hide-small { display: none; }
+    .hide-large { display: inline; }
 }

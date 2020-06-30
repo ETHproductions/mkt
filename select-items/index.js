@@ -59,7 +59,6 @@ let DKGCard = Vue.component('dkg-card', {
     methods: {
         update: function () {
             let data = window[this.type + 'data'][this.name];
-            console.log(data)
             let index = data.id - 1;
             if (this.type != "driver")
                 index += 20;
@@ -87,13 +86,13 @@ let DKGCard = Vue.component('dkg-card', {
 
 Vue.component('section-drivers', {
     template: `<dkg-section id="section-driver" type="driver"></dkg-section>`
-})
+});
 Vue.component('section-karts', {
     template: `<dkg-section type="kart"></dkg-section>`
-})
+});
 Vue.component('section-gliders', {
     template: `<dkg-section type="glider"></dkg-section>`
-})
+});
 Vue.component('dkg-section', {
     props: {
         type: String
@@ -114,11 +113,10 @@ Vue.component('dkg-section', {
                 }
             })
             children.push(elem)
-            console.log(elem)
         }
         return createElement('div', { attrs: { id: 'section-' + this.type, class: 'dkg-section' }}, children)
     }
-})
+});
 
 Vue.component('nav-item', {
     props: {
@@ -131,6 +129,17 @@ Vue.component('nav-item', {
             <img :src="'../img/items/' + tab + '.png'">
         </a>
     </li>`
+});
+
+Vue.component('editor-select', {
+    props: {
+        values: Object,
+        defaultval: String
+    },
+    template: `
+    <select>
+        <option v-for="(name, value) in values" :value=value :selected="value == defaultval">{{name}}</option>
+    </select>`
 })
 
 function drawChar(ctx, font, size, char, x, y) {
