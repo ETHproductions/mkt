@@ -54,8 +54,9 @@ let DKGCard = Vue.component('dkg-card', {
     methods: {
         update: function () {
             let card = this.card;
-            let data = window[card.type + 'data'][card.name];
-            let index = data.id - 1;
+            let item = card.item;
+            let dkgdata = window[card.type + 'data'][item.name];
+            let index = dkgdata.id - 1;
             if (card.type != "driver")
                 index += 20;
             
@@ -64,24 +65,24 @@ let DKGCard = Vue.component('dkg-card', {
             
             ctx.drawImage(document.getElementById("cards-" + card.type), 216 * (index % 10), 280 * (index / 10 | 0), 216, 280, 0, 0, 216, 280);
 
-            if (card.level === 0)
+            if (item.level === 0)
             {
                 ctx.fillStyle = "#000a";
                 ctx.fillRect(0, 0, 216, 280);
             }
             else
             {
-                ctx.drawImage(document.getElementById("cards-items"), 120 * (data.skill % 10), 120 * (data.skill / 10 | 0), 120, 120, 12, 200, 64, 64);
-                let basepoints = getBasePoints(card.type, card.rarity, card.bplevel);
+                ctx.drawImage(document.getElementById("cards-items"), 120 * (dkgdata.skill % 10), 120 * (dkgdata.skill / 10 | 0), 120, 120, 12, 200, 64, 64);
+                let basepoints = getBasePoints(card.type, item.rarity, item.bplevel);
                 drawText(ctx, fonts.numbercolor, 0.4, basepoints.toLocaleString().replace(/^1/, "!") + 'p', 207, 222, 'right')
-                drawText(ctx, fonts.numberrodinlevel, 0.333, '@' + card.level, 207, 179, 'right')
+                drawText(ctx, fonts.numberrodinlevel, 0.333, '@' + item.level, 207, 179, 'right')
             }
         },
         setCard: function (name) {
             app.openCard(name);
         }
     },
-    template: `<canvas class="card" :id='"canvas-" + card.type + "-" + card.itemid' v-on:click="setCard(card.name)" width=216 height=280></canvas>`
+    template: `<canvas class="card" :id='"canvas-" + card.type + "-" + card.itemid' v-on:click="setCard(card)" width=216 height=280></canvas>`
 });
 
 Vue.component('section-drivers', {
@@ -94,33 +95,47 @@ Vue.component('section-gliders', {
     template: `<dkg-section type="glider"></dkg-section>`
 });
 
+let inventory = localStorage.getItem("user-inventory");
+if (inventory == null) {
+    inventory = { drivers: {}, karts: {}, gliders: {} };
+    console.log('Created empty inventory:', inventory);
+} else {
+    console.log('Loaded user inventory:', JSON.parse(inventory));
+    inventory = JSON.parse(inventory);
+}
 let allcards = {};
+
 Vue.component('dkg-section', {
     props: {
         type: String
     },
     render: function (createElement) {
         let children = [];
-        let data = window[this.type + 'data']
-        for (let name in data) if (name != 'map') {
-            let itemid = data[name].id;
-            let card = {
-                type: this.type,
+        let dkgdata = window[this.type + 'data'];
+        for (let name in dkgdata) if (name != 'map') {
+            let itemid = dkgdata[name].id;
+            let item = inventory[this.type + 's'][itemid] || {
                 name: name,
-                rarity: data[name].rarity,
+                rarity: dkgdata[name].rarity,
                 itemid: itemid,
-                level: Math.random()**(data[name].rarity/2 + 0.5) * 5 + (3 - data[name].rarity) - itemid/100 | 0,
+                level: 0,
+                sublevel: 0,
                 pointscap: 0,
                 bplevel: 25
             };
-            allcards[name] = card;
+            inventory[this.type + 's'][itemid] = item;
+            let card = { item: item, type: this.type };
+            
             let elem = createElement(DKGCard, {
                 props: { card }
             });
-            card.elem = elem;
             children.push(elem);
+            
+            card.elem = elem;
+            card.type = this.type;
+            allcards[name] = card;
         }
-        return createElement('div', { attrs: { id: 'section-' + this.type, class: 'dkg-section' }}, children)
+        return createElement('div', { attrs: { id: 'section-' + this.type, class: 'dkg-section' }}, children);
     }
 });
 
@@ -148,13 +163,14 @@ Vue.component('editor-select', {
     <select v-on:change="$emit('input', $event.target.value); onInput()">
         <option v-for="(name, value) in values" :value=value :selected="value == defaultval">{{name}}</option>
     </select>`
-})
+});
 
 let bpobjCache = {};
 function getBasePointsObj(type, rarity, pointscap) {
     let cacheKey = type + rarity + pointscap;
     if (bpobjCache[cacheKey])
-        return bpobjCache[cacheKey]
+        return bpobjCache[cacheKey];
+    
     let driver = type == 'driver';
     let bpobj = {};
     let bp = (driver ? [,400,450,500] : [,200,220,250])[rarity];
@@ -182,6 +198,31 @@ function getBasePoints(type, rarity, bplevel) {
     if (!bpobj)
         bpobj = getBasePointsObj(type, rarity, 3);
     return bpobj[bplevel];
+}
+
+let slobjCache = {};
+function getSubLevelMax(rarity, level) {
+    return [,
+        [,2,5,8,11,14],
+        [,1,2,3,4,5],
+        [,1,1,2,2,3]
+    ][rarity][level];
+}
+function getSubLevelObj(rarity, level) {
+    let cacheKey = "" + rarity + level;
+    if (slobjCache[cacheKey])
+        return slobjCache[cacheKey];
+    
+    let slmax = getSubLevelMax(rarity, level);
+    let slobj = {};
+    
+    let sl = 0;
+    while (sl < slmax)
+        slobj[sl] = sl++ + "/" + slmax;
+    
+    slobjCache[cacheKey] = slobj;
+    
+    return slobj;
 }
 
 function drawChar(ctx, font, size, char, x, y) {
@@ -217,11 +258,12 @@ function imageLoaded() {
 
 let app;
 function finishedLoading() {
+    $('#card-editor').removeClass('hidden');
     app = new Vue({
         el: '#container',
         data: {
             activeTab: 'drivers',
-            allcards: allcards,
+            inventory: inventory,
             editorOpen: false,
             activeCard: null,
             levelObj: {
@@ -237,16 +279,21 @@ function finishedLoading() {
                 "1": "+1",
                 "2": "+2",
                 "3": "Max"
-            },
-            inventory: { drivers: [], karts: [], gliders: [] }
+            }
         },
         computed: {
             currentTabComponent: function() {
                 return 'section-' + this.activeTab;
             },
             basepointsObj: function() {
-                let data = this.activeCard;
-                return getBasePointsObj(data.type, data.rarity, data.pointscap);
+                if (!this.activeCard) throw new ReferenceError("Cannot retrieve possible base points for a null item");
+                let card = this.activeCard;
+                return getBasePointsObj(card.type, card.item.rarity, card.item.pointscap);
+            },
+            sublevelObj: function() {
+                if (!this.activeCard) throw new ReferenceError("Cannot retrieve possible base points for a null item");
+                let item = this.activeCard.item;
+                return getSubLevelObj(item.rarity, item.level);
             }
         },
         methods: {
@@ -254,22 +301,32 @@ function finishedLoading() {
                 this.editorOpen = false;
                 this.activeCard = null;
             },
-            openCard: function (name) {
-                if (this.activeCard && this.activeCard.name == name)
-                    return console.log("Already open!");
+            openCard: function (card) {
+                if (this.activeCard == card)
+                    return;
                 this.closeEditor();
-                setTimeout(()=>(this.activeCard = allcards[name],
-                this.editorOpen = true),1);
+                setTimeout(() => {
+                    this.activeCard = card;
+                    this.editorOpen = true;
+                }, 1);
             },
             updateCard: function () {
+                if (!this.activeCard) throw new ReferenceError("Cannot update card for a null item");
+                let item = this.activeCard.item;
+                item.level |= 0;
+                item.sublevel |= 0;
+                item.pointscap |= 0;
+                item.bplevel |= 0;
                 this.activeCard.elem.componentInstance.update();
                 $("#card-editor-card")[0].__vue__.update();
+                localStorage.setItem('user-inventory', JSON.stringify(inventory));
             },
             toggleOwned: function () {
-                if (this.activeCard.level == 0)
-                    this.activeCard.level = 1;
+                if (!this.activeCard) throw new ReferenceError("Cannot toggle ownership of a null item");
+                if (this.activeCard.item.level == 0)
+                    this.activeCard.item.level = 1;
                 else
-                    this.activeCard.level = 0;
+                    this.activeCard.item.level = 0;
                 this.updateCard();
             }
         }

@@ -22,39 +22,45 @@
     <keep-alive>
         <component :is="currentTabComponent" v-on:cardclick="setCard($event)"></component>
     </keep-alive>
-    <div id="card-editor" v-if="editorOpen">
+    <div id="card-editor" class="hidden" v-if="editorOpen">
         <div id="card-editor-exit" v-on:click="closeEditor()">×</div>
         <dkg-card id="card-editor-card" :card="activeCard"></dkg-card>
         <div id="card-editor-options">
-            <h2>{{activeCard.name}}</h2>
-            <br class="hide-small">
-            <input id="select-owned" type="checkbox" :checked="activeCard.level>0" v-on:input="toggleOwned()">
+            <h2>{{activeCard.item.name}}</h2>
+            <input id="select-owned" type="checkbox" v-on:input="toggleOwned()" :checked="activeCard.item.level > 0">
             <label for="select-owned">Owned</label>
             <br>
             <label for="select-level" class="hide-large">Level:</label>
             <editor-select
                            id="select-level"
                            :values="levelObj" 
-                           v-model="activeCard.level"
-                           :defaultval="activeCard.level"
-                           :disabled="activeCard.level<1">
+                           v-model="activeCard.item.level"
+                           :defaultval="activeCard.item.level"
+                           :disabled="activeCard.item.level == 0">
+            </editor-select>
+            <editor-select
+                           id="select-sublevel"
+                           :values="sublevelObj" 
+                           v-model="activeCard.item.sublevel"
+                           :defaultval="activeCard.item.sublevel"
+                           :disabled="activeCard.item.level == 0 || activeCard.item.level == 6">
             </editor-select>
             <br>
             <span class="hide-large">Base points:</span>
             <editor-select
                            id="select-basepoints"
                            :values="basepointsObj"
-                           v-model="activeCard.bplevel" 
-                           :defaultval="activeCard.bplevel"
-                           :disabled="activeCard.level<1">
+                           v-model="activeCard.item.bplevel" 
+                           :defaultval="activeCard.item.bplevel"
+                           :disabled="activeCard.item.level == 0">
             </editor-select>
             <br class="hide-large">Cap:
             <editor-select
                            id="select-pointscap"
                            :values="pointscapObj"
-                           v-model="activeCard.pointscap"
-                           :defaultval="activeCard.pointscap"
-                           :disabled="activeCard.level<1">
+                           v-model="activeCard.item.pointscap"
+                           :defaultval="activeCard.item.pointscap"
+                           :disabled="activeCard.item.level == 0">
             </editor-select>
         </div>
     </div>

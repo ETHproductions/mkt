@@ -59,10 +59,13 @@
     border: 1px solid #bcd;
     border-radius: 8px;
     position: fixed;
-    top: 75px;
+    top: 83px;
     right: calc(50vw - 540px);
     text-align: left;
     z-index: 5000;
+}
+#card-editor h2 {
+    height: 84px;
 }
 @media only screen and (max-width: 1099px) {
     #card-editor {
@@ -124,6 +127,9 @@ input[type=checkbox] {
         border-radius: 0;
         border-width: 1px 0px;
         margin: 0;
+    }
+    #card-editor h2 {
+        height: auto;
     }
     #card-editor-options {
         display: block;
