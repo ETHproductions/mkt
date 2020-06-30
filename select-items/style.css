@@ -31,7 +31,6 @@
     margin-bottom: 0px;
 }
 .nav-item {
-    display: list-item;
     padding: 8px 8px 0px;
     border: 1px solid transparent;
     border-radius: 8px 8px 0px 0px;
@@ -51,6 +50,10 @@
 }
 .nav-item img {
     width: 48px;
+}
+.nav button {
+    font-size: 20px;
+    margin: 16px;
 }
 
 #card-editor {

@@ -328,6 +328,24 @@ function finishedLoading() {
                 else
                     this.activeCard.item.level = 0;
                 this.updateCard();
+            },
+            confirmReset: function () {
+                this.closeEditor();
+                if (!confirm("Do you really want to reset everything in your inventory? This cannot be undone."))
+                    return;
+                for (let type in inventory) {
+                    let items = inventory[type];
+                    for (let id in items) {
+                        let item = items[id];
+                        item.level = 0;
+                        item.sublevel = 0;
+                        item.pointscap = 0;
+                        item.bplevel = 25;
+                    }
+                }
+                localStorage.setItem('user-inventory', JSON.stringify(inventory));
+                for (let name in allcards)
+                    allcards[name].elem.componentInstance.update();
             }
         }
     });

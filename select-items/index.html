@@ -18,6 +18,7 @@
 
     <ul class="nav">
         <li is="nav-item" v-for="tab in ['drivers','karts','gliders']" :key="tab" :tab="tab" :active="tab == activeTab" v-on:change-tab="activeTab = tab"></li>
+        <li><button v-on:click="confirmReset()">Reset</button></li>
     </ul>
     <keep-alive>
         <component :is="currentTabComponent" v-on:cardclick="setCard($event)"></component>
