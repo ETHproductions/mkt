@@ -20,39 +20,42 @@
         <li is="nav-item" v-for="tab in ['drivers','karts','gliders']" :key="tab" :tab="tab" :active="tab == activeTab" v-on:change-tab="activeTab = tab"></li>
     </ul>
     <keep-alive>
-        <component :is="currentTabComponent"></component>
+        <component :is="currentTabComponent" v-on:cardclick="setCard($event)"></component>
     </keep-alive>
-    <div id="card-editor">
-        <div id="card-editor-exit">×</div>
-        <dkg-card type=driver name="Rosalina (Aurora)" :id=63 :level=2 :pointscap=1 :basepoints=920></dkg-card>
+    <div id="card-editor" v-if="editorOpen">
+        <div id="card-editor-exit" v-on:click="closeEditor()">×</div>
+        <dkg-card id="card-editor-card" :card="activeCard"></dkg-card>
         <div id="card-editor-options">
-            <h2>Rosalina (Aurora)</h2>
+            <h2>{{activeCard.name}}</h2>
             <br class="hide-small">
-            <input id="select-owned" type="checkbox" checked>
+            <input id="select-owned" type="checkbox" :checked="activeCard.level>0" v-on:input="toggleOwned()">
             <label for="select-owned">Owned</label>
             <br>
             <label for="select-level" class="hide-large">Level:</label>
-            <select id="select-level">
-                <option value="1">1</option>
-                <option value="2"selected>2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-            </select>
+            <editor-select
+                           id="select-level"
+                           :values="levelObj" 
+                           v-model="activeCard.level"
+                           :defaultval="activeCard.level"
+                           :disabled="activeCard.level<1">
+            </editor-select>
             <br>
             <span class="hide-large">Base points:</span>
-            <select id="select-basepoints">
-                <option value="31">980</option>
-                <option value="30">950</option>
-                <option value="29" selected>920</option>
-                <option value="28">890</option>
-                <option value="27">860</option>
-                <option value="26">830</option>
-                <option value="25">800</option>
-            </select>
+            <editor-select
+                           id="select-basepoints"
+                           :values="basepointsObj"
+                           v-model="activeCard.bplevel" 
+                           :defaultval="activeCard.bplevel"
+                           :disabled="activeCard.level<1">
+            </editor-select>
             <br class="hide-large">Cap:
-            <editor-select id="select-pointscap" :values="{'0':'Base','1':'+1','2':'+2','3':'Max'}" defaultval="1"></editor-select>
+            <editor-select
+                           id="select-pointscap"
+                           :values="pointscapObj"
+                           v-model="activeCard.pointscap"
+                           :defaultval="activeCard.pointscap"
+                           :disabled="activeCard.level<1">
+            </editor-select>
         </div>
     </div>
 

@@ -46,29 +46,25 @@ let fonts = {
 
 let DKGCard = Vue.component('dkg-card', {
     props: {
-        type: String, // "driver", "kart", or "glider"
-        name: String,
-        id: Number,
-        level: Number,
-        pointscap: Number,
-        basepoints: Number
+        card: Object
     },
     mounted: function () {
         this.update();
     },
     methods: {
         update: function () {
-            let data = window[this.type + 'data'][this.name];
+            let card = this.card;
+            let data = window[card.type + 'data'][card.name];
             let index = data.id - 1;
-            if (this.type != "driver")
+            if (card.type != "driver")
                 index += 20;
             
             let ctx = this.$el.getContext("2d");
             ctx.clearRect(0, 0, 216, 280);
             
-            ctx.drawImage(document.getElementById("cards-" + this.type), 216 * (index % 10), 280 * (index / 10 | 0), 216, 280, 0, 0, 216, 280);
+            ctx.drawImage(document.getElementById("cards-" + card.type), 216 * (index % 10), 280 * (index / 10 | 0), 216, 280, 0, 0, 216, 280);
 
-            if (this.level === 0)
+            if (card.level === 0)
             {
                 ctx.fillStyle = "#000a";
                 ctx.fillRect(0, 0, 216, 280);
@@ -76,16 +72,20 @@ let DKGCard = Vue.component('dkg-card', {
             else
             {
                 ctx.drawImage(document.getElementById("cards-items"), 120 * (data.skill % 10), 120 * (data.skill / 10 | 0), 120, 120, 12, 200, 64, 64);
-                drawText(ctx, fonts.numbercolor, 0.4, this.basepoints.toLocaleString().replace(/^1/, "!") + 'p', 207, 222, 'right')
-                drawText(ctx, fonts.numberrodinlevel, 0.333, '@' + this.level, 207, 179, 'right')
+                let basepoints = getBasePoints(card.type, card.rarity, card.bplevel);
+                drawText(ctx, fonts.numbercolor, 0.4, basepoints.toLocaleString().replace(/^1/, "!") + 'p', 207, 222, 'right')
+                drawText(ctx, fonts.numberrodinlevel, 0.333, '@' + card.level, 207, 179, 'right')
             }
+        },
+        setCard: function (name) {
+            app.openCard(name);
         }
     },
-    template: `<canvas class="card" :id='"canvas-" + type + "-" + id' width=216 height=280></canvas>`
+    template: `<canvas class="card" :id='"canvas-" + card.type + "-" + card.itemid' v-on:click="setCard(card.name)" width=216 height=280></canvas>`
 });
 
 Vue.component('section-drivers', {
-    template: `<dkg-section id="section-driver" type="driver"></dkg-section>`
+    template: `<dkg-section type="driver"></dkg-section>`
 });
 Vue.component('section-karts', {
     template: `<dkg-section type="kart"></dkg-section>`
@@ -93,6 +93,8 @@ Vue.component('section-karts', {
 Vue.component('section-gliders', {
     template: `<dkg-section type="glider"></dkg-section>`
 });
+
+let allcards = {};
 Vue.component('dkg-section', {
     props: {
         type: String
@@ -101,18 +103,22 @@ Vue.component('dkg-section', {
         let children = [];
         let data = window[this.type + 'data']
         for (let name in data) if (name != 'map') {
-            let id = data[name].id;
+            let itemid = data[name].id;
+            let card = {
+                type: this.type,
+                name: name,
+                rarity: data[name].rarity,
+                itemid: itemid,
+                level: Math.random()**(data[name].rarity/2 + 0.5) * 5 + (3 - data[name].rarity) - itemid/100 | 0,
+                pointscap: 0,
+                bplevel: 25
+            };
+            allcards[name] = card;
             let elem = createElement(DKGCard, {
-                props: {
-                    type: this.type,
-                    name: name,
-                    id: id,
-                    level: Math.random()**(data[name].rarity/2 + 0.5) * 5 + (3 - data[name].rarity) - id/100 | 0,
-                    pointscap: 0,
-                    basepoints: (this.type == 'drivers' ? [, 600, 675, 800] : [, 300, 330, 400])[data[name].rarity]
-                }
-            })
-            children.push(elem)
+                props: { card }
+            });
+            card.elem = elem;
+            children.push(elem);
         }
         return createElement('div', { attrs: { id: 'section-' + this.type, class: 'dkg-section' }}, children)
     }
@@ -132,15 +138,51 @@ Vue.component('nav-item', {
 });
 
 Vue.component('editor-select', {
-    props: {
-        values: Object,
-        defaultval: String
+    props: ['values', 'defaultval'],
+    methods: {
+        onInput: function () {
+            app.updateCard();
+        }
     },
     template: `
-    <select>
+    <select v-on:change="$emit('input', $event.target.value); onInput()">
         <option v-for="(name, value) in values" :value=value :selected="value == defaultval">{{name}}</option>
     </select>`
 })
+
+let bpobjCache = {};
+function getBasePointsObj(type, rarity, pointscap) {
+    let cacheKey = type + rarity + pointscap;
+    if (bpobjCache[cacheKey])
+        return bpobjCache[cacheKey]
+    let driver = type == 'driver';
+    let bpobj = {};
+    let bp = (driver ? [,400,450,500] : [,200,220,250])[rarity];
+    let inc = (driver ? [,8,9,12] : [,4,4,6])[rarity];
+
+    let index = 0;
+    while (index < 15)
+        bpobj[index++] = bp, bp += inc;
+
+    if (!driver && rarity == 2) inc = 5;
+    while (index < 25)
+        bpobj[index++] = bp, bp += inc;
+
+    inc = (driver ? [,8,15,30] : [,4,6,15])[rarity];
+    let caplevel = [25,31,38,45][pointscap];
+    while (index <= caplevel)
+        bpobj[index++] = bp, bp += inc;
+    
+    bpobjCache[cacheKey] = bpobj;
+
+    return bpobj;
+}
+function getBasePoints(type, rarity, bplevel) {
+    let bpobj = bpobjCache[type + rarity + 3];
+    if (!bpobj)
+        bpobj = getBasePointsObj(type, rarity, 3);
+    return bpobj[bplevel];
+}
 
 function drawChar(ctx, font, size, char, x, y) {
     let chardata = font.chars[char];
@@ -173,16 +215,62 @@ function imageLoaded() {
         loadData().then(finishedLoading);
 }
 
+let app;
 function finishedLoading() {
-    let app = new Vue({
+    app = new Vue({
         el: '#container',
         data: {
             activeTab: 'drivers',
+            allcards: allcards,
+            editorOpen: false,
+            activeCard: null,
+            levelObj: {
+                "1": 1,
+                "2": 2,
+                "3": 3,
+                "4": 4,
+                "5": 5,
+                "6": 6
+            },
+            pointscapObj: {
+                "0": "Base",
+                "1": "+1",
+                "2": "+2",
+                "3": "Max"
+            },
             inventory: { drivers: [], karts: [], gliders: [] }
         },
         computed: {
             currentTabComponent: function() {
                 return 'section-' + this.activeTab;
+            },
+            basepointsObj: function() {
+                let data = this.activeCard;
+                return getBasePointsObj(data.type, data.rarity, data.pointscap);
+            }
+        },
+        methods: {
+            closeEditor: function () {
+                this.editorOpen = false;
+                this.activeCard = null;
+            },
+            openCard: function (name) {
+                if (this.activeCard && this.activeCard.name == name)
+                    return console.log("Already open!");
+                this.closeEditor();
+                setTimeout(()=>(this.activeCard = allcards[name],
+                this.editorOpen = true),1);
+            },
+            updateCard: function () {
+                this.activeCard.elem.componentInstance.update();
+                $("#card-editor-card")[0].__vue__.update();
+            },
+            toggleOwned: function () {
+                if (this.activeCard.level == 0)
+                    this.activeCard.level = 1;
+                else
+                    this.activeCard.level = 0;
+                this.updateCard();
             }
         }
     });
