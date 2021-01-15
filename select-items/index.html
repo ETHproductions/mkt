@@ -19,6 +19,7 @@
     <ul class="nav">
         <li is="nav-item" v-for="tab in ['drivers','karts','gliders']" :key="tab" :tab="tab" :active="tab == activeTab" v-on:change-tab="activeTab = tab"></li>
         <li><button v-on:click="confirmReset()">Reset</button></li>
+        <li class="nav-menu"><a href="#">≡</a></li>
     </ul>
     <keep-alive>
         <component :is="currentTabComponent" v-on:cardclick="setCard($event)"></component>
@@ -47,20 +48,20 @@
                            :disabled="activeCard.item.level == 0 || activeCard.item.level == 6">
             </editor-select>
             <br>
+            <editor-select
+                           id="select-pointscap"
+                           :values="pointscapObj"
+                           v-model="activeCard.item.pointscap"
+                           :defaultval="activeCard.item.pointscap"
+                           :disabled="activeCard.item.level == 0">
+            </editor-select>
+            <br class="hide-large">
             <span class="hide-large">Base points:</span>
             <editor-select
                            id="select-basepoints"
                            :values="basepointsObj"
                            v-model="activeCard.item.bplevel" 
                            :defaultval="activeCard.item.bplevel"
-                           :disabled="activeCard.item.level == 0">
-            </editor-select>
-            <br class="hide-large">Cap:
-            <editor-select
-                           id="select-pointscap"
-                           :values="pointscapObj"
-                           v-model="activeCard.item.pointscap"
-                           :defaultval="activeCard.item.pointscap"
                            :disabled="activeCard.item.level == 0">
             </editor-select>
         </div>

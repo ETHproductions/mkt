@@ -78,8 +78,8 @@ let DKGCard = Vue.component('dkg-card', {
                 drawText(ctx, fonts.numberrodinlevel, 0.333, '@' + item.level, 207, 179, 'right')
             }
         },
-        setCard: function (name) {
-            app.openCard(name);
+        setCard: function (card) {
+            app.openCard(card);
         }
     },
     template: `<canvas class="card" :id='"canvas-" + card.type + "-" + card.itemid' v-on:click="setCard(card)" width=216 height=280></canvas>`
@@ -156,6 +156,8 @@ Vue.component('editor-select', {
     props: ['values', 'defaultval'],
     methods: {
         onInput: function () {
+            if (this.$el.id == "select-pointscap")
+                app.activeCard.item.bplevel = [25,31,38,45][this.$el.value];
             app.updateCard();
         }
     },
@@ -172,31 +174,31 @@ function getBasePointsObj(type, rarity, pointscap) {
         return bpobjCache[cacheKey];
     
     let driver = type == 'driver';
+    let minlevel = [0,25,31,38,0][pointscap];
+    let maxlevel = [25,31,38,45,45][pointscap];
+
     let bpobj = {};
     let bp = (driver ? [,400,450,500] : [,200,220,250])[rarity];
     let inc = (driver ? [,8,9,12] : [,4,4,6])[rarity];
 
     let index = 0;
-    while (index < 15)
-        bpobj[index++] = bp, bp += inc;
-
-    if (!driver && rarity == 2) inc = 5;
-    while (index < 25)
-        bpobj[index++] = bp, bp += inc;
-
-    inc = (driver ? [,8,15,30] : [,4,6,15])[rarity];
-    let caplevel = [25,31,38,45][pointscap];
-    while (index <= caplevel)
-        bpobj[index++] = bp, bp += inc;
+    while (index <= 45) {
+        if (minlevel <= index && index <= maxlevel)
+            bpobj[index] = bp;
+        bp += inc;
+        if (++index == 15 && !driver && rarity == 2)
+            inc = 5;
+        if (index == 25)
+            inc = (driver ? [,8,15,30] : [,4,6,15])[rarity];
+    }
     
     bpobjCache[cacheKey] = bpobj;
 
     return bpobj;
 }
 function getBasePoints(type, rarity, bplevel) {
-    let bpobj = bpobjCache[type + rarity + 3];
-    if (!bpobj)
-        bpobj = getBasePointsObj(type, rarity, 3);
+    bpobj = getBasePointsObj(type, rarity, 4);
+    console.log(bpobj, rarity);
     return bpobj[bplevel];
 }
 
@@ -275,10 +277,10 @@ function finishedLoading() {
                 "6": 6
             },
             pointscapObj: {
-                "0": "Base",
-                "1": "+1",
-                "2": "+2",
-                "3": "Max"
+                "0": "Base cap",
+                "1": "+1 cap",
+                "2": "+2 cap",
+                "3": "Max cap"
             }
         },
         computed: {
@@ -323,10 +325,15 @@ function finishedLoading() {
             },
             toggleOwned: function () {
                 if (!this.activeCard) throw new ReferenceError("Cannot toggle ownership of a null item");
-                if (this.activeCard.item.level == 0)
-                    this.activeCard.item.level = 1;
-                else
-                    this.activeCard.item.level = 0;
+                let item = this.activeCard.item;
+                if (item.level == 0)
+                    item.level = 1;
+                else {
+                    item.level = 0;
+                    item.sublevel = 0;
+                    item.pointscap = 0;
+                    item.bplevel = 25;
+                }
                 this.updateCard();
             },
             confirmReset: function () {

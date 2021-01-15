@@ -27,6 +27,7 @@
     list-style: none;
     display: flex;
     flex-wrap: wrap;
+    width: 502px;
     padding: 0px;
     margin-bottom: 0px;
 }
@@ -55,6 +56,16 @@
     font-size: 20px;
     margin: 16px;
 }
+.nav-menu {
+    font-size: 32px;
+    margin-left: auto;
+}
+.nav-menu a {
+    text-decoration: none;
+    border: 1px solid #bcd;
+    border-radius: 8px;
+    padding: 0px 12px;
+}
 
 #card-editor {
     width: 500px;
@@ -64,6 +75,7 @@
     position: fixed;
     top: 83px;
     right: calc(50vw - 540px);
+    background-color: #000c;
     text-align: left;
     z-index: 5000;
 }
@@ -75,7 +87,6 @@
         right: 0;
         width: calc(100% - 50px);
         max-width: 520px;
-        background-color: #000c;
         border-radius: 8px 0px 0px 8px;
         border-right: none;
     }
@@ -121,6 +132,10 @@ input[type=checkbox] {
     .dkg-section canvas.card {
         width: 23%;
         margin: 0.4vw 1%;
+    }
+    .nav {
+        width: calc(103.2% - 18px);
+        min-width: 350px;
     }
     #card-editor {
         text-align: center;
