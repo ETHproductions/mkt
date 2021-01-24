@@ -1,0 +1,53 @@
+1,Tour,New York Minute,New_Gmob_NewYork1
+12,Tour,Tokyo Blur,New_Gmob_Tokyo1
+22,Tour,Paris Promenade,New_Gmob_Paris1
+25,Tour,London Loop,New_Gmob_London1
+26,Tour,New York Minute 2,New_Gmob_NewYork2
+28,Tour,Tokyo Blur 2,New_Gmob_Tokyo2
+31,Tour,Paris Promenade 2,New_Gmob_Paris2
+32,Tour,Vancouver Velocity,New_Gmob_Vancouver1
+34,Tour,London Loop 2,New_Gmob_London2
+44,Tour,Tokyo Blur 3,New_Gmob_Tokyo3
+46,Tour,Los Angeles Laps,New_Gmob_LosAngeles1
+47,Tour,New York Minute 3,New_Gmob_NewYork3
+53,Tour,Berlin Blitz 2,New_Gmob_Berlin2
+50,Tour,Merry Mountain,New_Gmob_HillClimb
+33,Tour,RMX Mario Circuit 1,Remix_Grsfc_MarioCircuit1
+37,Tour,RMX Choco Island 1,Remix_Grsfc_ChocoIsland1
+45,Tour,RMX Rainbow Road 1,Remix_Grsfc_RainbowRoad1
+52,Tour,RMX Rainbow Road 2,Remix_Grsfc_RainbowRoad2
+3,SNES,Mario Circuit 1,Classic_Gsfc_MarioCircuit1
+35,SNES,Donut Plains 1,Classic_Gsfc_DonutsPlain1
+20,SNES,Ghost Valley 1,Classic_Gsfc_GhostValley1
+16,SNES,Mario Circuit 2,Classic_Gsfc_MarioCircuit2
+38,SNES,Choco Island 1,Classic_Gsfc_ChocoIsland1
+23,SNES,Mario Circuit 3,Classic_Gsfc_MarioCircuit3
+17,SNES,Choco Island 2,Classic_Gsfc_ChocoIsland2
+30,SNES,Vanilla Lake 1,Classic_Gsfc_VanillaLake1
+40,SNES,Koopa Troopa Beach 2,Classic_Gsfc_KoopaTroopaBeach2
+14,SNES,Rainbow Road,Classic_Gsfc_RainbowRoad
+9,N64,Koopa Troopa Beach,Classic_Gn64_KoopaTroopaBeach
+18,N64,Kalimari Desert,Classic_Gn64_KalimariDesert
+29,N64,Frappe Snowland,Classic_Gn64_FrappeSnowland
+41,N64,Choco Mountain,Classic_Gn64_ChocoMountain
+39,N64,Royal Raceway,Classic_Gn64_PeachCircuit
+42,N64,Kalimari Desert 2,Classic_Gn64_KalimariDesert2
+11,GBA,Bowser's Castle 1,Classic_Gagb_BowserCastle1
+36,GBA,Bowser's Castle 2,Classic_Gagb_BowserCastle2
+49,GBA,Sunset Wilds,Classic_Gagb_SunsetWilds
+7,GCN,Yoshi Circuit,Classic_Ggc_YoshiCircuit
+4,GCN,Dino Dino Jungle,Classic_Ggc_DinoDinoJungle
+19,DS,Luigi's Mansion,Classic_Gds_LuigiMansion
+21,DS,Waluigi Pinball,Classic_Gds_WaluigiPinball
+24,DS,DK Pass,Classic_Gds_DKPass
+43,DS,Airship Fortress,Classic_Gds_KillerShip
+48,Wii,Maple Treeway,Classic_Gwii_MapleTreeway
+5,3DS,Toad Circuit,Classic_G3ds_ToadCircuit
+8,3DS,Daisy Hills,Classic_G3ds_DaisyHills
+2,3DS,Cheep Cheep Lagoon,Classic_G3ds_CheepCheepLagoon
+10,3DS,Shy Guy Bazaar,Classic_G3ds_ShyGuyBazaar
+13,3DS,Mario Circuit,Classic_G3ds_MarioCircuit
+6,3DS,Rock Rock Mountain,Classic_G3ds_RockRockMountain
+15,3DS,Neo Bowser City,Classic_G3ds_NeoBowserCity
+51,3DS,Rosalina's Ice World,Classic_G3ds_RosettaPlanet
+27,3DS,Rainbow Road,Classic_G3ds_RainbowRoad

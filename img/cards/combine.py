@@ -3,6 +3,13 @@ from PIL import Image
 from os import listdir
 
 imfiles = []
+colors = [
+  "Black", "Blue", "Brown", "Green", "Orange",
+  "Pink", "Red", "WineRed", "EmeraldGreen",
+  "Black", "Gray", "LightBlue", "LightGreen",
+  "PinkGold", "Purple", "Silver", "Ultramarine",
+  "White", "Yellow"
+]
 
 def add_images(index):
   for file in imfiles:
@@ -22,33 +29,33 @@ if len(sys.argv) > 1:
 print("dir: " + dir)
 
 if dir == "gliders":
-    imfiles = [i for i in listdir(dir) if i[:13] == "Super Glider "]
+    imfiles = ["Normal/Wing_Std_" + i + ".png" for i in colors]
 elif dir == "karts":
-    imfiles = [i for i in listdir(dir) if i[:11] == "Pipe Frame "]
+    imfiles = ["Normal/Machine_70048_" + str(i) + "_20008.png" for i in range(10038, 10057)]
 
-im = Image.new('RGBA', (10 * 216, (len(listdir(dir)) + (dir != "drivers") + 9) // 10 * 280))
-
-add_images(0)
 
 index = 0
 if len(imfiles) > 0:
     print("Finished with color variants.\n")
     index = 20
 
-ids = {}
-file = open('../../data/' + dir + '.csv', encoding='utf8')
+lines = {}
+maxid = 0
+file = open('../../data/' + dir + '_new.csv', encoding='utf8')
 for line in file.readlines():
-    line = line.replace('?', 'Q').split(',')
-    print(line[1] + ': ' + line[0])
-    ids[line[1]] = line[0]
+    line = line.split(',')
+    print(line[2] + ': ' + line[3])
+    line[2] = int(line[2])
+    lines[line[2]] = line
+    maxid = max(maxid, line[2])
 
-imfiles = [i for i in listdir(dir) if i[-4:] == ".png" and i not in imfiles and i[:-4] in ids]
+im = Image.new('RGBA', (10 * 216, (len(lines) + 20*(dir != "drivers") + 9) // 10 * 280))
+add_images(0)
 
-def dkg_index(name):
-    return int(ids[name[:-4]])
+lines = [lines[i] for i in range(1, maxid+1)]
+imfiles = [[0,"Normal","Rare","Ultra"][int(x[5])] + "/" + ("Machine_" + x[0][4:] if dir == "karts" else x[1]) + ".png" for x in lines]
 
-imfiles.sort(key=dkg_index)
-
+print(imfiles)
 add_images(index)
 
 print("Finished resizing.")

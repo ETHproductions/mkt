@@ -2,7 +2,7 @@ import sys
 from PIL import Image
 from os import listdir
 
-im = Image.new('RGBA', (10 * 120, 5 * 120))
+im = Image.new('RGBA', (10 * 120, 6 * 120))
 
 def add_images(index):
     for file in imfiles:
@@ -22,7 +22,7 @@ imfiles = list(map(lambda x:x + '.png', "Mushroom,Blooper,Green Shell,Red Shell,
 add_images(10)
 print("Finished with glider skills.\n")
 
-imfiles = list(map(lambda x:x + '.png', "Boomerang Flower,Bubble,Triple Green Shells,Double Bob-ombs,Fire Flower,Heart,Yoshi's Egg,Triple Mushrooms,Bowser's Shell,Giant Banana,Banana Barrels,Mushroom Cannon,Lucky 7,Dash Ring,Coin Box,Bob-omb Cannon,Triple Bananas,Birdo's Egg,Ice Flower,Hammer".split(",")))
+imfiles = list(map(lambda x:x + '.png', "Boomerang Flower,Bubble,Triple Green Shells,Double Bob-ombs,Fire Flower,Heart,Yoshi's Egg,Triple Mushrooms,Bowser's Shell,Giant Banana,Banana Barrels,Mushroom Cannon,Lucky 7,Dash Ring,Coin Box,Bob-omb Cannon,Triple Bananas,Birdo's Egg,Ice Flower,Hammer,Giga Bob-omb".split(",")))
 add_images(30)
 
 print("Finished with driver skills.")
