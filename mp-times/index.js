@@ -15,7 +15,7 @@ function changeCup(a) {
         cupStart += 12*cupDuration;
     
     let output = "Next 10 times: (each cup lasts 13 minutes)<br>";
-    for (let i = 0; i <= 10; i++) {
+    for (let i = 0; i < 10 && cupStart < +tourStart + tourDuration; i++) {
         output += new Date(cupStart).toString() + "<br>";
         cupStart += 12*cupDuration;
     }
